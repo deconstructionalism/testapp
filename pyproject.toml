@@ -1,0 +1,17 @@
+[tool.black]
+line-length = 78
+
+[tool.poetry]
+name = "marshall-summarizer"
+version = "0.1.0"
+description = "Summarize model data in current version of AdmitHub's `marshall` app and persist model summaries into a database."
+authors = ["Arjun Ray <deconstructionalism@gmail.com>, Bethany Poulin<bethany@admithub.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+python-dotenv = "^0.17.1"
+
+[build-system]
+requires = ["poetry>=1.1.6"]
+build-backend = "poetry.masonry.api"
