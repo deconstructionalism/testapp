@@ -1,9 +1,9 @@
+from .resource import Field, ForeignKeyField, Meta, Relationship, Resource
 from django.db.models.base import ModelBase
-from django.db.models.fields import Field
+from django.db.models.fields import Field as ModelField
 from django.db.models.fields.related import RelatedField
 from django.db.models.fields.reverse_related import ForeignObjectRel
 from re import sub
-from src import resource
 from typing import List, Union
 
 
@@ -19,14 +19,14 @@ def get_resource_name(resource: ModelBase) -> str:
 # MAIN CLASSES
 
 
-class PGMeta(resource.Meta):
+class PGMeta(Meta):
     """Postgres field metadata (singular) concrete class."""
 
     def __init__(self, meta: Union[str, int, float, bool], name: str) -> None:
         super().__init__(meta, name)
 
 
-class PGField(resource.Field):
+class PGField(Field):
     """
     Postgres field concrete class.
 
@@ -48,11 +48,11 @@ class PGField(resource.Field):
             for name, value in self._value.__dict__.items()
         ]
 
-    def __init__(self, field: Field) -> None:
+    def __init__(self, field: ModelField) -> None:
         super().__init__(field)
 
 
-class PGForeignKeyField(PGField, resource.ForeignKeyField):
+class PGForeignKeyField(PGField, ForeignKeyField):
     """
     Postgres foreign key field concrete class.
 
@@ -67,11 +67,11 @@ class PGForeignKeyField(PGField, resource.ForeignKeyField):
     def related_field(self) -> str:
         return PGField(self._value.target_field).name
 
-    def __init__(self, field: object) -> None:
+    def __init__(self, field: RelatedField) -> None:
         super().__init__(field)
 
 
-class PGVirtualField(resource.Field):
+class PGVirtualField(Field):
     """
     Postgres virtual field concrete class.
 
@@ -95,7 +95,7 @@ class PGVirtualField(resource.Field):
         self._name = name
 
 
-class PGRelationship(resource.Relationship):
+class PGRelationship(Relationship):
     """
     Postgres relationship concrete class.
 
@@ -122,7 +122,7 @@ class PGRelationship(resource.Relationship):
         super().__init__(relationship)
 
 
-class PGResource(resource.Resource):
+class PGResource(Resource):
     """
     Postgres resource concrete class.
 
@@ -138,7 +138,7 @@ class PGResource(resource.Resource):
         return [
             PGField(field)
             for field in self._value._meta.get_fields()
-            if isinstance(field, Field)
+            if isinstance(field, ModelField)
         ]
 
     @property

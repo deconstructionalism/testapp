@@ -1,9 +1,10 @@
+from ..default_transformer import DefaultTransformer, Transformer
+from .resource import Field, ForeignKeyField, Meta, Resource
+from app.lib.types import MongoModelType
 from mongoengine.base import BaseField
 from mongoengine.fields import LazyReferenceField, ReferenceField
-from src import resource
-from src.marshall_models import MongoModelType
 from typing import List, Type, Union
-from src.default_transformer import Transformer, DefaultTransformer
+
 
 # HELPER FUNCTIONS
 
@@ -42,7 +43,9 @@ def nullable_field_string(field: Type, field_type: str) -> str:
 
 mongo_extractor_config = {
     "EmbeddedDocumentField": document_string,
-    "EmbeddedDocumentListField": lambda field: document_string(field.field),
+    "EmbeddedDocumentListField": lambda field, field_type: document_string(
+        field.field, field_type
+    ),
     "ReferenceField": document_string,
     "LazyReferenceField": document_string,
     "ListField": nullable_field_string,
@@ -53,14 +56,14 @@ mongo_extractor_config = {
 # MAIN CLASSES
 
 
-class MongoMeta(resource.Meta):
+class MongoMeta(Meta):
     """Mongo field metadata (singular) concrete class."""
 
     def __init__(self, meta: Union[str, int, float, bool], name: str) -> None:
         super().__init__(meta, name)
 
 
-class MongoField(resource.Field):
+class MongoField(Field):
     """
     Mongo field concrete class.
 
@@ -104,7 +107,7 @@ class MongoField(resource.Field):
         self.__type_transformer = MongoField.__init_type_transformer()
 
 
-class MongoForeignKeyField(MongoField, resource.ForeignKeyField):
+class MongoForeignKeyField(MongoField, ForeignKeyField):
     """
     Mongo foreign key field concrete class.
 
@@ -117,19 +120,22 @@ class MongoForeignKeyField(MongoField, resource.ForeignKeyField):
 
     @property
     def related_field(self) -> str:
-        related_resource = self.related_resource
         field = next(
-            (f for f in related_resource.fields if f.type == "ObjectIdField"),
+            (
+                f
+                for f in self._value.document_type._fields.values()
+                if f.__class__.__name__ == "ObjectIdField"
+            ),
             None,
         )
 
-        return field if field is None else field.name
+        return field if field is None else MongoField(field).name
 
     def __init__(self, field: BaseField) -> None:
         super().__init__(field)
 
 
-class MongoVirtualField(resource.Field):
+class MongoVirtualField(Field):
     """
     Mongo virtual field concrete class.
 
@@ -153,7 +159,7 @@ class MongoVirtualField(resource.Field):
         self._name = name
 
 
-class MongoResource(resource.Resource):
+class MongoResource(Resource):
     """
     Mongo resource concrete class.
 

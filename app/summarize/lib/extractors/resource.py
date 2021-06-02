@@ -1,11 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from app.models import DatabaseTypes
+from app.lib import DatabaseTypes
 from dotenv import load_dotenv
-from inspect import (
-    getcomments,
-    getsourcefile,
-    getsourcelines,
-)
+from inspect import getcomments, getsourcefile, getsourcelines
 from os import getenv
 from os.path import relpath
 from re import sub

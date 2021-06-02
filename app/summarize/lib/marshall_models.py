@@ -1,5 +1,7 @@
 import os
 import sys
+from .extractors import MongoResource, PGResource
+from app.lib.types import MongoDocumentClasses, MongoModelType
 from django.apps import apps
 from django.db.models.base import ModelBase
 from importlib.util import (
@@ -7,23 +9,12 @@ from importlib.util import (
     module_from_spec,
 )
 from inspect import isclass
-from mongoengine.base import BaseDocument
-from mongoengine.document import MapReduceDocument
 from types import ModuleType
-from typing import List, Union
+from typing import List
 
 # use `django` settings from `backend` app inside of `marshall`
 sys.path.append("marshall/backend")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-
-# model class types to include in return for `mongo_models` property in
-# `MarshallModels` instance
-MONGO_DOCUMENT_CLASSES = [BaseDocument, MapReduceDocument]
-
-# cannot use unpack operator below Python v3.10 to avoid duplication of
-# `MONGO_DOCUMENT_CLASSES` contents, so the union of return types needs to be
-# specified explicitly
-MongoModelType = Union[BaseDocument, MapReduceDocument]
 
 
 def load_init_only(path_to_module: str) -> ModuleType:
@@ -57,7 +48,7 @@ class MarshallModels:
 
             if not isclass(obj):
                 return False
-            return any([issubclass(obj, c) for c in MONGO_DOCUMENT_CLASSES])
+            return any([issubclass(obj, c) for c in MongoDocumentClasses])
 
         mongo_models = [
             model
@@ -67,10 +58,16 @@ class MarshallModels:
 
         return mongo_models
 
+    @classmethod
+    def get_models(cls, name: str) -> List[PGResource]:
+        """Get models from `marshall` by app name."""
+
+        if name == "mongo":
+            return [MongoResource(model) for model in cls.__mongo_models()]
+
+        return [PGResource(model) for model in cls.__app_models(name)]
+
     def __init__(self) -> None:
         # use a fresh `django` instance per instantiation
-        self.django = __import__("django")
-        self.django.setup()
-        self.web = MarshallModels.__app_models("web")
-        self.dataparty = MarshallModels.__app_models("dataparty")
-        self.mongo = self.__mongo_models()
+        django = __import__("django")
+        django.setup()
