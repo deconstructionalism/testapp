@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from app.models import DatabaseTypes
 from dotenv import load_dotenv
 from inspect import (
     getcomments,
@@ -8,7 +9,7 @@ from inspect import (
 from os import getenv
 from os.path import relpath
 from re import sub
-from typing import Any, List, Type, Union
+from typing import List, Optional, Type, Union
 
 
 # LOAD ENV VARIABLES
@@ -19,17 +20,27 @@ marshall_repo_base_url = getenv("MARSHALL_REPO_BASE_URL")
 marshall_branch = getenv("MARSHALL_BRANCH")
 
 
+# HELPER FUNCTIONS
+
+
 def get_description(obj: object) -> str:
     """Get description string for an object."""
 
-    chunks = [obj.__doc__, getcomments(obj)]
+    # for builtin types, only provide type
+    doc = (
+        type(obj).__name__
+        if type(obj).__module__ == "builtins"
+        else obj.__doc__
+    )
+    chunks = [doc, getcomments(obj)]
+
     return "\n".join(filter(None, chunks))
 
 
 def dict_map(obj_list: List[object]) -> List[dict]:
     """Map list of objects to their `__dict__` method outputs."""
 
-    return [obj.__dict__() for obj in obj_list]
+    return [obj.__dict__ for obj in obj_list]
 
 
 # ABSTRACT RESOURCE CLASSES
@@ -49,12 +60,16 @@ class Meta(metaclass=ABCMeta):
         self.name = name
         self.value = meta
 
+    @property
     def __dict__(self) -> dict:
         return {
             "name": self.name,
             "value": self.value,
             "description": self.description,
         }
+
+    def __repr__(self) -> str:
+        return f'<{type(self).__name__}: name="{self.name}">'
 
 
 class Field(metaclass=ABCMeta):
@@ -90,6 +105,7 @@ class Field(metaclass=ABCMeta):
     def __init__(self, field: object) -> None:
         self._value = field
 
+    @property
     def __dict__(self) -> dict:
         return {
             "name": self.name,
@@ -97,6 +113,11 @@ class Field(metaclass=ABCMeta):
             "metadata": dict_map(self.metadata),
             "description": self.description,
         }
+
+    def __repr__(self) -> str:
+        return (
+            f'<{type(self).__name__}: name="{self.name}" type="{self.type}">'
+        )
 
 
 class ForeignKeyField(Field, metaclass=ABCMeta):
@@ -116,8 +137,9 @@ class ForeignKeyField(Field, metaclass=ABCMeta):
 
         return ""
 
+    @property
     def __dict__(self) -> dict:
-        field_dict = super().__dict__()
+        field_dict = super().__dict__
 
         return dict(
             field_dict,
@@ -168,6 +190,7 @@ class Relationship(metaclass=ABCMeta):
     def __init__(self, relationship: object) -> None:
         self._value = relationship
 
+    @property
     def __dict__(self) -> dict:
         return {
             "type": self.type,
@@ -176,6 +199,12 @@ class Relationship(metaclass=ABCMeta):
             "related_field": self.related_field,
             "description": self.description,
         }
+
+    def __repr__(self) -> str:
+        return (
+            f'<{type(self).__name__}: type="{self.type}" '
+            + 'to="{self.related_resource}">'
+        )
 
 
 class Resource(metaclass=ABCMeta):
@@ -191,21 +220,20 @@ class Resource(metaclass=ABCMeta):
     def name(self) -> str:
         """Get resource name."""
 
-        return "{}.{}".format(
-            self._value.__module__, self._value.__name__
-        )
+        return "{}.{}".format(self._value.__module__, self._value.__name__)
 
     @property
-    def source_link(self) -> str:
+    def source_link(self) -> Optional[str]:
         """Get a link to module in "marshall" Github repo with line number."""
 
         try:
             relative_path = relpath(getsourcefile(self._value))
             if not relative_path.startswith("marshall/"):
-                return (
+                print(
                     f'module "{self.name}" at "{relative_path}" '
                     + 'not found in "marshall" app.'
                 )
+                return None
 
             module_route = sub("^marshall/", "", relative_path)
             start_line = getsourcelines(self._value)[1]
@@ -227,7 +255,7 @@ class Resource(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def primary_key(self) -> str:
+    def primary_key(self) -> Optional[str]:
         """Get primary key."""
 
         return ""
@@ -260,10 +288,11 @@ class Resource(metaclass=ABCMeta):
 
         return []
 
-    def __init__(self, resource: Type, database_type: str) -> None:
+    def __init__(self, resource: Type, database_type: DatabaseTypes) -> None:
         self._value = resource
         self.database_type = database_type
 
+    @property
     def __dict__(self) -> dict:
         return {
             "type": self.type,
@@ -277,3 +306,8 @@ class Resource(metaclass=ABCMeta):
             "virtual_fields": dict_map(self.virtual_fields),
             "relationships": dict_map(self.relationships),
         }
+
+    def __repr__(self) -> str:
+        return (
+            f'<{type(self).__name__}: type="{self.type}" name="{self.name}">'
+        )

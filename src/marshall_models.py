@@ -1,4 +1,3 @@
-import mongoengine
 import os
 import sys
 from django.apps import apps
@@ -8,6 +7,8 @@ from importlib.util import (
     module_from_spec,
 )
 from inspect import isclass
+from mongoengine.base import BaseDocument
+from mongoengine.document import MapReduceDocument
 from types import ModuleType
 from typing import List, Union
 
@@ -17,24 +18,12 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
 # model class types to include in return for `mongo_models` property in
 # `MarshallModels` instance
-MONGO_DOCUMENT_CLASSES = [
-    mongoengine.Document,
-    mongoengine.DynamicDocument,
-    mongoengine.DynamicEmbeddedDocument,
-    mongoengine.EmbeddedDocument,
-    mongoengine.MapReduceDocument,
-]
+MONGO_DOCUMENT_CLASSES = [BaseDocument, MapReduceDocument]
 
 # cannot use unpack operator below Python v3.10 to avoid duplication of
 # `MONGO_DOCUMENT_CLASSES` contents, so the union of return types needs to be
 # specified explicitly
-MongoModelType = Union[
-    mongoengine.Document,
-    mongoengine.DynamicDocument,
-    mongoengine.DynamicEmbeddedDocument,
-    mongoengine.EmbeddedDocument,
-    mongoengine.MapReduceDocument,
-]
+MongoModelType = Union[BaseDocument, MapReduceDocument]
 
 
 def load_init_only(path_to_module: str) -> ModuleType:

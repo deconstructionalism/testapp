@@ -1,55 +1,13 @@
-from collections import defaultdict
 from django.db.models.base import ModelBase
 from django.db.models.fields import Field
 from django.db.models.fields.related import RelatedField
 from django.db.models.fields.reverse_related import ForeignObjectRel
 from re import sub
 from src import resource
-from typing import Any, List, Union
-
-# DUMMY FILTER DATA (REPLACE WITH QUERY)
-
-default_included_meta = [
-    "null",
-    "blank",
-    "choices",
-    "db_column",
-    "db_index",
-    "db_tablespace",
-    "default",
-    "editable",
-    "error_messages",
-    "help_text",
-    "primary_key",
-    "unique",
-    "unique_for_date",
-    "unique_for_month",
-    "unique_for_year",
-    "verbose_name",
-    "validators",
-]
-
-included_meta_dict = defaultdict(lambda: default_included_meta)
+from typing import List, Union
 
 
-def default_transform(field: Field, meta_value: Any) -> Any:
-    return meta_value
-
-
-field_transforms = {
-    "default": lambda field, meta_value: field.get_default(),
-    "validators": lambda field, meta_value: [
-        type(v).__name__ for v in meta_value
-    ],
-}
-
-field_transform_dict = defaultdict(lambda: default_transform)
-
-for k, v in field_transforms.items():
-    field_transform_dict[k] = v
-
-
-# HELPER METHODS
+# HELPER FUNCTIONS
 
 
 def get_resource_name(resource: ModelBase) -> str:
@@ -85,34 +43,16 @@ class PGField(resource.Field):
 
     @property
     def metadata(self) -> List[PGMeta]:
-        def get_transform_meta_value(field: Field, meta_name: str) -> Any:
-            """
-            Get meta value from field and transform according to method in
-            `field_transform_dict`.
-            """
-
-            meta_value = getattr(field, meta_name, None)
-            transform = field_transform_dict[meta_name]
-
-            return transform(field, meta_value)
-
-        included_meta = included_meta_dict[type]
-
-        meta = []
-
-        for meta_name in included_meta:
-            value = get_transform_meta_value(self._value, meta_name)
-            if value not in [None, ""]:
-                meta.append(PGMeta(value, meta_name))
-
-        return meta
+        return [
+            PGMeta(value, name)
+            for name, value in self._value.__dict__.items()
+        ]
 
     def __init__(self, field: Field) -> None:
         super().__init__(field)
 
 
 class PGForeignKeyField(PGField, resource.ForeignKeyField):
-
     """
     Postgres foreign key field concrete class.
 
@@ -132,7 +72,6 @@ class PGForeignKeyField(PGField, resource.ForeignKeyField):
 
 
 class PGVirtualField(resource.Field):
-
     """
     Postgres virtual field concrete class.
 
@@ -145,7 +84,7 @@ class PGVirtualField(resource.Field):
 
     @property
     def type(self) -> str:
-        return 'virtual'
+        return "virtual"
 
     @property
     def metadata(self) -> list:
@@ -157,7 +96,6 @@ class PGVirtualField(resource.Field):
 
 
 class PGRelationship(resource.Relationship):
-
     """
     Postgres relationship concrete class.
 
@@ -166,11 +104,7 @@ class PGRelationship(resource.Relationship):
 
     @property
     def type(self) -> str:
-        return sub(
-            "([a-z])([A-Z])",
-            "\\g<1> \\g<2>",
-            sub("Rel$", "", type(self._value).__name__),
-        )
+        return sub("Rel$", "", type(self._value).__name__)
 
     @property
     def field(self) -> str:
@@ -189,7 +123,6 @@ class PGRelationship(resource.Relationship):
 
 
 class PGResource(resource.Resource):
-
     """
     Postgres resource concrete class.
 
