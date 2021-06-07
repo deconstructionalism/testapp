@@ -1,9 +1,11 @@
-from ..default_transformer import DefaultTransformer, Transformer
-from .resource import Field, ForeignKeyField, Meta, Resource
+from os import stat
+from ..default_transformer import DefaultTransformer
+from .resource import Field, Meta, Resource
 from app.lib.types import MongoModelType
 from mongoengine.base import BaseField
 from mongoengine.fields import LazyReferenceField, ReferenceField
-from typing import List, Type, Union
+from typing import Any, List, Optional, Tuple, Type, Union
+from typing_extensions import Literal
 
 
 # HELPER FUNCTIONS
@@ -15,42 +17,68 @@ def get_resource_name(resource: MongoModelType) -> str:
     return "{}.{}".format(resource.__module__, resource.__name__)
 
 
-# MONGO FIELD TRANSFORMER CONFIG
+# MONGO FIELD TYPE TRANSFORMER
 
 
-def get_full_name(cls: Type) -> str:
-    """Get full class name including module path."""
+class MongoFieldTypeTransformer:
+    """
+    Configure a `DefaultTransformer` instance to get mongo field type
+    strings from field data.
+    """
 
-    return "{}.{}".format(cls.__module__, cls.__name__)
+    def __full_name(cls: Type) -> str:
+        """Get full class name including module path."""
 
+        return "{}.{}".format(cls.__module__, cls.__name__)
 
-def document_string(field: Type, field_type: str) -> str:
-    """Get field type string for a document reference."""
+    def __document(field: Type, field_type: str) -> Tuple[str, str]:
+        """Get field type string for a document reference."""
 
-    return f"{field_type.capitalize()}<{get_full_name(field.document_type)}>"
+        referenced_type = MongoFieldTypeTransformer.__full_name(
+            field.document_type
+        )
 
+        return [f"{field_type}<{referenced_type}>", referenced_type]
 
-def nullable_field_string(field: Type, field_type: str) -> str:
-    """Get field type string for a field reference."""
-    sub_field_type = (
-        "Any"
-        if getattr(field, "field", None) is None
-        else get_full_name(field.field.__class__)
+    def __field(field: Type, field_type: str) -> Tuple[str, str]:
+        """Get field type string for a field reference."""
+
+        referenced_type = (
+            "Any"
+            if getattr(field, "field", None) is None
+            else MongoFieldTypeTransformer.__full_name(field.field.__class__)
+        )
+
+        return [f"{field_type}<{referenced_type}>", referenced_type]
+
+    # if you want to parse a `mongoengine` field type in a non-generic way,
+    # add a named config here that takes `field` and `field_type` as args and
+    # returns an `str`
+    types_config = {
+        "EmbeddedDocumentField": __document,
+        "EmbeddedDocumentListField": (
+            lambda field, field_type: MongoFieldTypeTransformer.__document(
+                field.field, field_type
+            )
+        ),
+        "ReferenceField": __document,
+        "LazyReferenceField": __document,
+        "ListField": __field,
+        "MapField": __field,
+    }
+
+    # create `DefaultTransformer` instance and add all type configurations
+    # from `types_config`
+    transformer = DefaultTransformer(
+        lambda field: field.__class__.__name__,
+        lambda field, _: (field.__class__.__name__, None),
     )
 
-    return f"{field_type.capitalize()}<{sub_field_type}>"
+    for pair in types_config.items():
+        transformer.register(*pair)
 
-
-mongo_extractor_config = {
-    "EmbeddedDocumentField": document_string,
-    "EmbeddedDocumentListField": lambda field, field_type: document_string(
-        field.field, field_type
-    ),
-    "ReferenceField": document_string,
-    "LazyReferenceField": document_string,
-    "ListField": nullable_field_string,
-    "MapField": nullable_field_string,
-}
+    def __call__(self, item: Any) -> Any:
+        return MongoFieldTypeTransformer.transformer(item)
 
 
 # MAIN CLASSES
@@ -70,30 +98,25 @@ class MongoField(Field):
     (see metaclass for method docs)
     """
 
-    @staticmethod
-    def __init_type_transformer() -> Transformer:
-        """
-        Set up default transfomer for rich type string with all
-        transformations in `mongo_extractor_config`.
-        """
-
-        transformer = DefaultTransformer(
-            lambda field: field.__class__.__name__,
-            lambda field, _: field.__class__.__name__,
-        )
-
-        for pair in mongo_extractor_config.items():
-            transformer.register(*pair)
-
-        return transformer
-
     @property
     def name(self) -> str:
         return self._value.name
 
     @property
     def type(self) -> str:
-        return self.__type_transformer(self._value)
+        return self.__transformer(self._value)[0]
+
+    @property
+    def foreign_resource_name(self) -> None:
+        return None
+
+    @property
+    def is_primary_key(self) -> bool:
+        return self.name == self.__resource_primary_key
+
+    @property
+    def is_virtual(self) -> bool:
+        return False
 
     @property
     def metadata(self) -> List[MongoMeta]:
@@ -102,12 +125,15 @@ class MongoField(Field):
             for name, value in self._value.__dict__.items()
         ]
 
-    def __init__(self, field: BaseField) -> None:
+    def __init__(
+        self, field: BaseField, resource_primary_key: Optional[str] = None
+    ) -> None:
         super().__init__(field)
-        self.__type_transformer = MongoField.__init_type_transformer()
+        self.__transformer = MongoFieldTypeTransformer()
+        self.__resource_primary_key = resource_primary_key
 
 
-class MongoForeignKeyField(MongoField, ForeignKeyField):
+class MongoForeignKeyField(MongoField):
     """
     Mongo foreign key field concrete class.
 
@@ -115,27 +141,16 @@ class MongoForeignKeyField(MongoField, ForeignKeyField):
     """
 
     @property
-    def related_resource(self) -> str:
-        return get_resource_name(self._value.document_type)
+    def foreign_resource_name(self) -> None:
+        return self.__transformer(self._value)[1]
 
-    @property
-    def related_field(self) -> str:
-        field = next(
-            (
-                f
-                for f in self._value.document_type._fields.values()
-                if f.__class__.__name__ == "ObjectIdField"
-            ),
-            None,
-        )
-
-        return field if field is None else MongoField(field).name
-
-    def __init__(self, field: BaseField) -> None:
-        super().__init__(field)
+    def __init__(
+        self, field: BaseField, resource_primary_key: Optional[str]
+    ) -> None:
+        super().__init__(field, resource_primary_key)
 
 
-class MongoVirtualField(Field):
+class MongoVirtualField(MongoField):
     """
     Mongo virtual field concrete class.
 
@@ -149,6 +164,10 @@ class MongoVirtualField(Field):
     @property
     def type(self) -> str:
         return "virtual"
+
+    @property
+    def is_virtual(self) -> bool:
+        return True
 
     @property
     def metadata(self) -> list:
@@ -169,7 +188,12 @@ class MongoResource(Resource):
     @property
     def primary_key(self) -> str:
         field = next(
-            (f for f in self.fields if f.type == "ObjectIdField"), None
+            (
+                f
+                for f in self._value._fields.values()
+                if type(f).__name__ == "ObjectIdField"
+            ),
+            None,
         )
 
         return field if field is None else field.name
@@ -177,7 +201,7 @@ class MongoResource(Resource):
     @property
     def fields(self) -> List[MongoField]:
         return [
-            MongoField(field)
+            MongoField(field, self.primary_key)
             for field in self._value._fields.values()
             if not isinstance(field, (LazyReferenceField, ReferenceField))
         ]
@@ -185,7 +209,7 @@ class MongoResource(Resource):
     @property
     def foreign_key_fields(self) -> list:
         return [
-            MongoForeignKeyField(field)
+            MongoField(field, self.primary_key)
             for field in self._value._fields.values()
             if isinstance(field, (LazyReferenceField, ReferenceField))
         ]

@@ -54,7 +54,7 @@ class Meta(metaclass=ABCMeta):
     def __init__(self, meta: Union[str, int, float, bool], name: str) -> None:
         self._value = meta
         self.name = name
-        self.value = meta
+        self.value = str(meta)
 
     @property
     def __dict__(self) -> dict:
@@ -93,6 +93,31 @@ class Field(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def foreign_resource_name(self) -> Optional[str]:
+        """
+        Get foreign resource name.
+
+        Field is implicitly foreign key field if not `None`.
+        """
+
+        return ""
+
+    @property
+    @abstractmethod
+    def is_primary_key(self) -> bool:
+        """Get whether field is a primary key field."""
+
+        return False
+
+    @property
+    @abstractmethod
+    def is_virtual(self) -> bool:
+        """Get whether field is a virtual field."""
+
+        return False
+
+    @property
+    @abstractmethod
     def metadata(self) -> List[Meta]:
         """Get metadata."""
 
@@ -106,6 +131,9 @@ class Field(metaclass=ABCMeta):
         return {
             "name": self.name,
             "type": self.type,
+            "foreign_resource_name": self.foreign_resource_name,
+            "is_primary_key": self.is_primary_key,
+            "is_virtual": self.is_virtual,
             "metadata": dict_map(self.metadata),
             "description": self.description,
         }
@@ -113,36 +141,6 @@ class Field(metaclass=ABCMeta):
     def __repr__(self) -> str:
         return (
             f'<{type(self).__name__}: name="{self.name}" type="{self.type}">'
-        )
-
-
-class ForeignKeyField(Field, metaclass=ABCMeta):
-    """Abstract foreign key field class for abstract `Resource` class."""
-
-    @property
-    @abstractmethod
-    def related_resource(self) -> str:
-        """Get name of related resource."""
-
-        return ""
-
-    @property
-    @abstractmethod
-    def related_field(self) -> str:
-        """Get name of reference field in related resource."""
-
-        return ""
-
-    @property
-    def __dict__(self) -> dict:
-        field_dict = super().__dict__
-
-        return dict(
-            field_dict,
-            **{
-                "related_resource": self.related_resource,
-                "related_field": self.related_field,
-            },
         )
 
 
@@ -199,7 +197,7 @@ class Relationship(metaclass=ABCMeta):
     def __repr__(self) -> str:
         return (
             f'<{type(self).__name__}: type="{self.type}" '
-            + 'to="{self.related_resource}">'
+            + f'to="{self.related_resource}">'
         )
 
 
@@ -265,7 +263,7 @@ class Resource(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def foreign_key_fields(self) -> List[ForeignKeyField]:
+    def foreign_key_fields(self) -> List[Field]:
         """Get list of foreign key fields."""
 
         return []
