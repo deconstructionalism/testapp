@@ -1,18 +1,19 @@
-from os import stat
-from ..default_transformer import DefaultTransformer
-from .resource import Field, Meta, Resource
 from app.lib.types import MongoModelType
+from app.summarize.lib import DefaultTransformer
+from app.summarize.lib.extractors import (
+    AbstractField,
+    AbstractMetadata,
+    AbstractResource,
+)
 from mongoengine.base import BaseField
 from mongoengine.fields import LazyReferenceField, ReferenceField
 from typing import Any, List, Optional, Tuple, Type, Union
-from typing_extensions import Literal
-
 
 # HELPER FUNCTIONS
 
 
 def get_resource_name(resource: MongoModelType) -> str:
-    """Get the name for a resource."""
+    """Get the unique name for a resource."""
 
     return "{}.{}".format(resource.__module__, resource.__name__)
 
@@ -84,14 +85,26 @@ class MongoFieldTypeTransformer:
 # MAIN CLASSES
 
 
-class MongoMeta(Meta):
+class MongoMetadata(AbstractMetadata):
     """Mongo field metadata (singular) concrete class."""
 
-    def __init__(self, meta: Union[str, int, float, bool], name: str) -> None:
-        super().__init__(meta, name)
+    @property
+    def name(self):
+        return f"{self._field_name}.{self._name}"
+
+    @property
+    def field_name(self):
+        return self._field_name
+
+    def __init__(
+        self, meta: Union[str, int, float, bool], name: str, field_name: str
+    ) -> None:
+        super().__init__(meta)
+        self._name = name
+        self._field_name = field_name
 
 
-class MongoField(Field):
+class MongoField(AbstractField):
     """
     Mongo field concrete class.
 
@@ -100,54 +113,45 @@ class MongoField(Field):
 
     @property
     def name(self) -> str:
-        return self._value.name
+        return f"{self._resource_name}.{self._value.name}"
 
     @property
     def type(self) -> str:
         return self.__transformer(self._value)[0]
 
     @property
-    def foreign_resource_name(self) -> None:
+    def resource_name(self) -> None:
+        return self._resource_name
+
+    @property
+    def related_resource_name(self) -> None:
         return None
 
     @property
     def is_primary_key(self) -> bool:
-        return self.name == self.__resource_primary_key
+        return self.name == self._resource_primary_key
 
     @property
     def is_virtual(self) -> bool:
         return False
 
     @property
-    def metadata(self) -> List[MongoMeta]:
+    def metadata(self) -> List[MongoMetadata]:
         return [
-            MongoMeta(value, name)
+            MongoMetadata(value, name, self.name)
             for name, value in self._value.__dict__.items()
         ]
 
     def __init__(
-        self, field: BaseField, resource_primary_key: Optional[str] = None
+        self,
+        field: BaseField,
+        resource_name: str,
+        resource_primary_key: Optional[str] = None,
     ) -> None:
         super().__init__(field)
         self.__transformer = MongoFieldTypeTransformer()
-        self.__resource_primary_key = resource_primary_key
-
-
-class MongoForeignKeyField(MongoField):
-    """
-    Mongo foreign key field concrete class.
-
-    (see metaclass for method docs)
-    """
-
-    @property
-    def foreign_resource_name(self) -> None:
-        return self.__transformer(self._value)[1]
-
-    def __init__(
-        self, field: BaseField, resource_primary_key: Optional[str]
-    ) -> None:
-        super().__init__(field, resource_primary_key)
+        self._resource_name = resource_name
+        self._resource_primary_key = resource_primary_key
 
 
 class MongoVirtualField(MongoField):
@@ -159,7 +163,7 @@ class MongoVirtualField(MongoField):
 
     @property
     def name(self) -> str:
-        return self._name
+        return f"{self.resource_name}.{self._name}"
 
     @property
     def type(self) -> str:
@@ -173,12 +177,14 @@ class MongoVirtualField(MongoField):
     def metadata(self) -> list:
         return []
 
-    def __init__(self, field: property, name: str) -> None:
-        super().__init__(field)
+    def __init__(
+        self, field: property, name: str, resource_name: str
+    ) -> None:
+        super().__init__(field, resource_name)
         self._name = name
 
 
-class MongoResource(Resource):
+class MongoResource(AbstractResource):
     """
     Mongo resource concrete class.
 
@@ -199,20 +205,20 @@ class MongoResource(Resource):
         return field if field is None else field.name
 
     @property
-    def fields(self) -> List[MongoField]:
+    def normal_fields(self) -> List[MongoField]:
         return [
-            MongoField(field, self.primary_key)
+            MongoField(field, self.name, self.primary_key)
             for field in self._value._fields.values()
             if not isinstance(field, (LazyReferenceField, ReferenceField))
         ]
 
-    @property
-    def foreign_key_fields(self) -> list:
-        return [
-            MongoField(field, self.primary_key)
-            for field in self._value._fields.values()
-            if isinstance(field, (LazyReferenceField, ReferenceField))
-        ]
+    # @property
+    # def foreign_key_fields(self) -> List[MongoField]:
+    #     return [
+    #         MongoField(field, self.name, self.primary_key)
+    #         for field in self._value._fields.values()
+    #         if isinstance(field, (LazyReferenceField, ReferenceField))
+    #     ]
 
     @property
     def virtual_fields(self) -> List[MongoVirtualField]:
@@ -230,7 +236,7 @@ class MongoResource(Resource):
                 value = getattr(self._value, name)
 
                 if isinstance(value, property):
-                    fields.append(MongoVirtualField(value, name))
+                    fields.append(MongoVirtualField(value, name, self.name))
             except AttributeError:
                 print(f'unable to get virtual "{name}" from {self._value}')
 
