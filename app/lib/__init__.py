@@ -1,4 +1,4 @@
-from .base_model import BaseModel, db
+from .base_model import BaseModel, NamedBaseModel, db
 from .types import (
     DatabaseTypes,
     DatabaseTypesSQLAlchemy,
@@ -13,4 +13,5 @@ __all__ = [
     "db",
     "MongoDocumentClasses",
     "MongoModelType",
+    "NamedBaseModel",
 ]
