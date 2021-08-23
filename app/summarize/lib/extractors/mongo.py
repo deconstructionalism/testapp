@@ -7,7 +7,7 @@ from app.summarize.lib.extractors import (
 )
 from mongoengine.base import BaseField
 from mongoengine.fields import LazyReferenceField, ReferenceField
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import Any, List, Optional, Tuple, Type, Union, get_type_hints
 
 # HELPER FUNCTIONS
 
@@ -167,7 +167,8 @@ class MongoVirtualField(MongoField):
 
     @property
     def type(self) -> str:
-        return "virtual"
+        hints = get_type_hints(self._value.fget)
+        return str(hints['return']) if "return" in hints else "undefined"
 
     @property
     def is_virtual(self) -> bool:

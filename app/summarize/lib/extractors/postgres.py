@@ -9,7 +9,7 @@ from django.db.models.fields import Field as ModelField
 from django.db.models.fields.related import RelatedField
 from django.db.models.fields.reverse_related import ForeignObjectRel
 from re import sub
-from typing import List, Optional, Union
+from typing import List, Optional, Union, get_type_hints
 
 
 # HELPER FUNCTIONS
@@ -125,7 +125,8 @@ class PGVirtualField(PGField):
 
     @property
     def type(self) -> str:
-        return "virtual"
+        hints = get_type_hints(self._value.fget)
+        return str(hints['return']) if "return" in hints else "undefined"
 
     @property
     def is_virtual(self) -> bool:
