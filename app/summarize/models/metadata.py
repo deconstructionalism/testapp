@@ -1,14 +1,17 @@
-from app.lib import BaseModel, db
+from app.lib import NamedBaseModel, db
 
 
-class MetaData(BaseModel):
-    name = db.Column(db.String(), nullable=False)
+class Metadata(NamedBaseModel):
+    __tablename__ = "metadata"
+
+    # columns
     value = db.Column(db.String(), nullable=False)
     description = db.Column(db.Text)
 
-    field_id = db.Column(
-        db.Integer, db.ForeignKey("field.id"), nullable=False
+    # references
+    field_name = db.Column(
+        db.String(), db.ForeignKey("field.name"), nullable=False
     )
 
     def __repr__(self):
-        return f"<Metadata name={self.name}>"
+        return f'<Metadata: name="{self.name}">'
