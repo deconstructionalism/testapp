@@ -13,7 +13,6 @@ python = "^3.7"
 python-dotenv = "^0.17.1"
 psycopg2-binary = "^2.8"
 flask-sqlalchemy = "^2.5"
-Flask-Migrate = "^3.0"
 flask = "^2.0"
 SQLAlchemy-serializer = "^1.4"
 
