@@ -29,11 +29,11 @@ def generate_filter_routes(
             index = data[primary_key]
         except KeyError:
             return (
-                {"status": "fail", "data": {"expected keys": [primary_key]},},
+                {"status": "fail", "data": {"expected keys": [primary_key]}},
                 400,
             )
 
-        # retreive the filter if it iexists
+        # retreive the filter if it exists
         filter = filter_model.query.get(index)
 
         # delete the filter if it already exists
@@ -41,7 +41,7 @@ def generate_filter_routes(
             db.session.delete(filter)
             db.session.commit()
             return (
-                {"status": "success", "data": f"removed {entity} filter",},
+                {"status": "success", "data": f"removed {entity} filter"},
                 200,
             )
         # create the filter if it already exists, and handle integrity errors
@@ -54,7 +54,7 @@ def generate_filter_routes(
                 db.session.add(new_filter)
                 db.session.commit()
                 return (
-                    {"status": "success", "data": f"added {entity} filter",},
+                    {"status": "success", "data": f"added {entity} filter"},
                     201,
                 )
             except IntegrityError as e:
