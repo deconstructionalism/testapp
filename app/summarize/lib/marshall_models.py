@@ -32,10 +32,10 @@ class MarshallModels:
     """Get "web", "dataparty" and "mongo" models from `marshall` app."""
 
     @staticmethod
-    def __app_models(app_name: str) -> List[ModelBase]:
+    def __app_models(app: str) -> List[ModelBase]:
         """Load app models from django instance."""
 
-        return list(apps.get_app_config(app_name).get_models())
+        return list(apps.get_app_config(app).get_models())
 
     @staticmethod
     def __mongo_models() -> List[MongoModelType]:
@@ -59,13 +59,15 @@ class MarshallModels:
         return mongo_models
 
     @classmethod
-    def get_models(cls, name: str) -> List[PGResource]:
+    def get_models(cls, app: str) -> List[PGResource]:
         """Get models from `marshall` by app name."""
 
-        if name == "mongo":
-            return [MongoResource(model) for model in cls.__mongo_models()]
+        if app == "mongo":
+            return [
+                MongoResource(model, app) for model in cls.__mongo_models()
+            ]
 
-        return [PGResource(model) for model in cls.__app_models(name)]
+        return [PGResource(model, app) for model in cls.__app_models(app)]
 
     def __init__(self) -> None:
         # use a fresh `django` instance per instantiation
