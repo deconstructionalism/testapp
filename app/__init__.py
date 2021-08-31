@@ -44,9 +44,15 @@ def init_db_command():
     """
 
     # all tables to be initalized must be loaded here in order for them
-    # to be seen by `create_all` belwo
-    from app.filters.models import MetadataFilter, FieldFilter, ResourceFilter
-    from app.summarize.models import Resource, Field, Relationship, Metadata
+    # to be seen by `create_all` below
+    from app.filters.models import FieldFilter, MetadataFilter, ResourceFilter
+    from app.summarize.models import (
+        CommitSnapshot,
+        Field,
+        Metadata,
+        Relationship,
+        Resource,
+    )
 
     # drop all database tables and create new ones based on above models
     db.drop_all()

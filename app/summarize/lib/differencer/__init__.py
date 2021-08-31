@@ -8,6 +8,7 @@ from app.summarize.lib.differencer.helpers import (
     calculate_model_delta,
     get_marshall_resources,
     get_summarizer_data,
+    take_commit_snapshot,
     update_marshall_repo,
 )
 
@@ -25,7 +26,11 @@ def update_database() -> None:
     app.app_context().push()
 
     # fetch latest changes to marshall
-    update_marshall_repo()
+    marshall_updated = update_marshall_repo()
+
+    # do not sync data if marshall was not updated
+    if not marshall_updated:
+        return
 
     # extract data from marshall and from summarizer DB
     marshall_resources = get_marshall_resources()
@@ -58,3 +63,5 @@ def update_database() -> None:
     )
 
     update_relationships(relationship_delta)
+
+    take_commit_snapshot()
