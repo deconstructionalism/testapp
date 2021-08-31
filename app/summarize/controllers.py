@@ -98,7 +98,10 @@
 
 from app.summarize.models.resource import Resource
 from app.summarize.models.field import Field
-from app.summarize.lib.extractors.summarizer import SummarizerResource, SummarizerField
+from app.summarize.lib.extractors.summarizer import (
+    SummarizerResource,
+    SummarizerField,
+)
 from flask import abort, Blueprint, jsonify
 from typing import List
 
@@ -114,7 +117,10 @@ class Models:
     def get_all_models() -> List[dict]:
         """Get all models."""
 
-        return [SummarizerResource(model).__dict__ for model in Resource.query.all()]
+        return [
+            SummarizerResource(model).__dict__
+            for model in Resource.query.all()
+        ]
 
     def get_app_models(app_name: str) -> List[dict]:
         """Get all models for a given app."""

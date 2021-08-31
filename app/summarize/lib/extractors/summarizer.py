@@ -149,10 +149,7 @@ class SummarizerResource(AbstractResource):
 
     @property
     def fields(self) -> List[SummarizerField]:
-        return [
-            SummarizerField(field)
-            for field in self._value.fields
-        ]
+        return [SummarizerField(field) for field in self._value.fields]
 
     # @property
     # def foreign_key_fields(self) -> List[SummarizerField]:

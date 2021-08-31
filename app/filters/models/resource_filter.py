@@ -6,7 +6,7 @@ class ResourceFilter(BaseModel):
 
     # columns
     resource_name = db.Column(
-        db.String(), db.ForeignKey("resource.name"), primary_key=True
+        db.String(), db.ForeignKey("resource.name"), unique=True
     )
 
     # serializer config

@@ -6,7 +6,7 @@ class MetadataFilter(BaseModel):
 
     # columns
     metadata_name = db.Column(
-        db.String(), db.ForeignKey("metadata.name"), primary_key=True
+        db.String(), db.ForeignKey("metadata.name"), unique=True
     )
 
     # serializer config

@@ -6,7 +6,7 @@ class FieldFilter(BaseModel):
 
     # columns
     field_name = db.Column(
-        db.String(), db.ForeignKey("field.name"), primary_key=True
+        db.String(), db.ForeignKey("field.name"), unique=True
     )
 
     # serializer config
