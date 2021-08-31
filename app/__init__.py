@@ -1,13 +1,10 @@
 from flask import Flask
 from os import getenv
-from flask_migrate import Migrate
 from app.filters.controllers import filters
 from app.summarize.controllers import summarize
 import click
 from flask.cli import with_appcontext
 from app.database import db
-
-migrate = Migrate(None, db)
 
 
 def create_app() -> Flask:
@@ -26,7 +23,6 @@ def create_app() -> Flask:
     app.register_blueprint(summarize)
 
     app.cli.add_command(init_db_command)
-    migrate.init_app(app)
 
     return app
 
