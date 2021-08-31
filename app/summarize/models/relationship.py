@@ -11,12 +11,10 @@ class Relationship(NamedBaseModel):
     # references
     field_name = db.Column(
         db.String(),
-        # db.ForeignKey("field.name"),
         nullable=False,
     )
     related_field_name = db.Column(
         db.String(),
-        # db.ForeignKey("field.name"),
         nullable=False,
     )
     resource_name = db.Column(
@@ -24,7 +22,6 @@ class Relationship(NamedBaseModel):
     )
     related_resource_name = db.Column(
         db.String(),
-        # db.ForeignKey("resource.name"),
         nullable=False,
     )
 

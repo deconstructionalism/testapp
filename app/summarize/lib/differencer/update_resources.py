@@ -28,6 +28,8 @@ def update_resources(
     # track change counts
     counter = {"created": 0, "unarchived": 0, "archived": 0, "updated": 0}
 
+    # HELPER METHODS
+
     def is_resource_modified(next_data: AbstractResource) -> bool:
         """Check if resource has been changed."""
 
@@ -44,6 +46,16 @@ def update_resources(
         del next_flat["database_type"]
 
         return prev_flat != next_flat
+
+    def extract_children(
+        next_data: AbstractResource,
+    ) -> List[Tuple[AbstractField, str]]:
+        """Collect child fields per resource."""
+
+        marshall_fields.extend(next_data.fields)
+        marshall_relationships.extend(next_data.relationships)
+
+    # CRUD METHODS
 
     def create_resource(next_data: AbstractResource) -> None:
         """Create resource in database."""
@@ -90,14 +102,6 @@ def update_resources(
         counter["updated"] += 1
 
         print(f"  Resource[UPDATE] {next_data.name}")
-
-    def extract_children(
-        next_data: AbstractResource,
-    ) -> List[Tuple[AbstractField, str]]:
-        """Collect child fields per resource."""
-
-        marshall_fields.extend(next_data.fields)
-        marshall_relationships.extend(next_data.relationships)
 
     print("Staging Resource Changes...")
 

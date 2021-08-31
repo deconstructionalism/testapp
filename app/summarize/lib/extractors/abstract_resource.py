@@ -123,17 +123,6 @@ class AbstractField(metaclass=ABCMeta):
         return ""
 
     # @property
-    # @abstractmethod
-    # def related_resource_name(self) -> Optional[str]:
-    #     """
-    #     Get foreign resource name.
-
-    #     Field is implicitly foreign key field if not `None`.
-    #     """
-
-    #     return ""
-
-    # @property
     @abstractmethod
     def is_primary_key(self) -> bool:
         """Get whether field is a primary key field."""
@@ -162,7 +151,6 @@ class AbstractField(metaclass=ABCMeta):
         return {
             "name": self.name,
             "type": self.type,
-            # "related_resource_name": self.related_resource_name,
             "resource_name": self.resource_name,
             "is_primary_key": self.is_primary_key,
             "is_virtual": self.is_virtual,
@@ -299,7 +287,6 @@ class AbstractResource(metaclass=ABCMeta):
 
         return [
             *self.normal_fields,
-            # *self.foreign_key_fields,
             *self.virtual_fields,
         ]
 
@@ -323,13 +310,6 @@ class AbstractResource(metaclass=ABCMeta):
         """Get list of normal fields."""
 
         return []
-
-    # @property
-    # @abstractmethod
-    # def foreign_key_fields(self) -> List[AbstractField]:
-    #     """Get list of foreign key fields."""
-
-    #     return []
 
     @property
     @abstractmethod

@@ -10,9 +10,7 @@ logging_level = logging.DEBUG if getenv("DEBUG") == "1" else logging.INFO
 
 # define rotating file handler (max size 5 MB)
 file_handler = RotatingFileHandler(
-    "summarizer.log",
-    mode='a',
-    maxBytes=5*1024*1024
+    "summarizer.log", mode="a", maxBytes=5 * 1024 * 1024
 )
 
 # define console stream handler
@@ -23,10 +21,7 @@ logging.basicConfig(
     level=logging_level,
     format="%(asctime)s.%(msecs)03d |%(levelname)s|  %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        file_handler,
-        console_handler
-    ]
+    handlers=[file_handler, console_handler],
 )
 
 # instantiate a logger

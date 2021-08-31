@@ -18,6 +18,8 @@ def update_relationships(relationship_delta: Dict):
     # track change counts
     counter = {"created": 0, "deleted": 0, "updated": 0}
 
+    # HELPER METHODS
+
     def is_relationship_modified(next_data: AbstractRelationship) -> bool:
         """Check if relationship has been changed."""
 
@@ -32,6 +34,8 @@ def update_relationships(relationship_delta: Dict):
             print(prev_flat, next_flat)
 
         return prev_flat != next_flat
+
+    # CRUD METHODS
 
     def create_relationship(next_data: AbstractRelationship) -> None:
         """Create relationship in database."""

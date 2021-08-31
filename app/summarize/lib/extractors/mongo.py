@@ -226,27 +226,12 @@ class MongoResource(AbstractResource):
             if not isinstance(field, (LazyReferenceField, ReferenceField))
         ]
 
-    # @property
-    # def foreign_key_fields(self) -> List[MongoField]:
-    #     return [
-    #         MongoField(field, self.name, self.primary_key)
-    #         for field in self._value._fields.values()
-    #         if isinstance(field, (LazyReferenceField, ReferenceField))
-    #     ]
-
     @property
     def virtual_fields(self) -> List[MongoVirtualField]:
         fields = []
 
         for name in dir(self._value):
             try:
-
-                # # skip `objects` and `objects_including_drafts` keys which are
-                # # `mongoengine.queryset.QuerySet` instances that will slow down
-                # # the iteration by queryingthe DB needlessly
-                # if name in ["objects", "objects_including_drafts"]:
-                #     continue
-
                 value = getattr(self._value, name)
 
                 if isinstance(value, property):

@@ -23,18 +23,6 @@ class Field(NamedBaseModel):
         backref="field",
         cascade="all, delete-orphan",
     )
-    # relationships = db.relationship(
-    #     "Relationship",
-    #     foreign_keys="Relationship.field_name",
-    #     backref="field",
-    #     cascade="all, delete-orphan",
-    # )
-    # to_relationships = db.relationship(
-    #     "Relationship",
-    #     foreign_keys="Relationship.related_field_name",
-    #     backref="related_field",
-    #     cascade="all, delete-orphan",
-    # )
     field_filter = db.relationship(
         "FieldFilter",
         foreign_keys="FieldFilter.field_name",

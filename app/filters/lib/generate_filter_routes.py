@@ -10,6 +10,10 @@ def generate_filter_routes(
     primary_key: str,
     blueprint: Blueprint,
 ) -> None:
+    """
+    Helper function to generate get and patch routes to view and toggle filters
+    for a given entity type.
+    """
     @blueprint.route(
         f"/{entity}", methods=["GET"], endpoint=f"index_{entity}"
     )

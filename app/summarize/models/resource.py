@@ -25,12 +25,6 @@ class Resource(NamedBaseModel):
         backref="resource",
         cascade="all, delete-orphan",
     )
-    # to_relationships = db.relationship(
-    #     "Relationship",
-    #     foreign_keys="Relationship.related_resource_name",
-    #     backref="related_resource",
-    #     cascade="all, delete-orphan",
-    # )
     resource_filter = db.relationship(
         "ResourceFilter",
         foreign_keys="ResourceFilter.resource_name",

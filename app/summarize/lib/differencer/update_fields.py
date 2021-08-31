@@ -17,6 +17,8 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
     # track change counts
     counter = {"created": 0, "unarchived": 0, "archived": 0, "updated": 0}
 
+    # HELPER METHODS
+
     def is_field_modified(next_data: AbstractField) -> bool:
         """Check if field has been changed."""
 
@@ -28,6 +30,15 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         )
 
         return prev_flat != next_flat
+
+    def extract_meta(
+        next_data: AbstractField,
+    ) -> List[Tuple[AbstractMetadata, str]]:
+        """Collect child metadata per resource."""
+
+        marshall_metadata.extend(next_data.metadata)
+
+    # CRUD METHODS
 
     def create_field(next_data: AbstractField) -> None:
         """Create field in database."""
@@ -73,13 +84,6 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         counter["updated"] += 1
 
         print(f"  Field[UPDATE] {next_data.name}")
-
-    def extract_meta(
-        next_data: AbstractField,
-    ) -> List[Tuple[AbstractMetadata, str]]:
-        """Collect child metadata per resource."""
-
-        marshall_metadata.extend(next_data.metadata)
 
     print("Staging Field Changes...")
 

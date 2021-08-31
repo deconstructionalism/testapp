@@ -70,10 +70,6 @@ class PGField(AbstractField):
     def resource_name(self) -> str:
         return self._resource_name
 
-    # @property
-    # def related_resource_name(self) -> None:
-    #     return None
-
     @property
     def is_primary_key(self) -> bool:
         return self.name == self._resource_primary_key
@@ -98,26 +94,6 @@ class PGField(AbstractField):
         super().__init__(field)
         self._resource_name = resource_name
         self._resource_primary_key = resource_primary_key
-
-
-# class PGForeignKeyField(PGField):
-#     """
-#     Postgres foreign key field concrete class.
-
-#     (see metaclass for method docs)
-#     """
-
-#     @property
-#     def related_resource_name(self) -> None:
-#         return get_resource_name(self._value.related_model)
-
-#     def __init__(
-#         self,
-#         field: ModelField,
-#         resource_name: str,
-#         resource_primary_key: Optional[str],
-#     ) -> None:
-#         super().__init__(field, resource_name, resource_primary_key)
 
 
 class PGVirtualField(PGField):
@@ -207,14 +183,6 @@ class PGResource(AbstractResource):
             for field in self._value._meta.get_fields()
             if isinstance(field, (ModelField, RelatedField))
         ]
-
-    # @property
-    # def foreign_key_fields(self) -> List[PGForeignKeyField]:
-    #     return [
-    #         PGForeignKeyField(field, self.name, self.primary_key)
-    #         for field in self._value._meta.get_fields()
-    #         if isinstance(field, RelatedField)
-    #     ]
 
     @property
     def virtual_fields(self) -> List[PGVirtualField]:

@@ -18,6 +18,8 @@ def update_metadata(metadata_delta: Dict) -> None:
     # track change counts
     counter = {"created": 0, "deleted": 0, "updated": 0}
 
+    # HELPER METHODS
+
     def is_metadata_modified(next_data: AbstractMetadata) -> bool:
         """Check if metadata has been changed."""
 
@@ -29,6 +31,8 @@ def update_metadata(metadata_delta: Dict) -> None:
         )
 
         return prev_flat != next_flat
+
+    # CRUD METHODS
 
     def create_metadata(next_data: AbstractMetadata) -> None:
         """Create metadata in database."""

@@ -57,10 +57,6 @@ class SummarizerField(AbstractField):
     def resource_name(self) -> None:
         return self._value.resource_name
 
-    # @property
-    # def related_resource_name(self) -> None:
-    #     return self._value.related_resource_name
-
     @property
     def is_primary_key(self) -> bool:
         return self._value.is_primary_key
@@ -150,10 +146,6 @@ class SummarizerResource(AbstractResource):
     @property
     def fields(self) -> List[SummarizerField]:
         return [SummarizerField(field) for field in self._value.fields]
-
-    # @property
-    # def foreign_key_fields(self) -> List[SummarizerField]:
-    #     return []
 
     @property
     def primary_key(self) -> str:

@@ -29,7 +29,7 @@ def load_init_only(path_to_module: str) -> ModuleType:
 
 
 class MarshallModels:
-    """Get "web", "dataparty" and "mongo" models from `marshall` app."""
+    """Get postgres and "mongo" models from `marshall` app."""
 
     @staticmethod
     def __app_models(app: str) -> List[ModelBase]:
