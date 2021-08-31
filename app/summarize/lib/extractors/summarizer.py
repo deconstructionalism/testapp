@@ -19,6 +19,10 @@ class SummarizerMetadata(AbstractMetadata):
         return self._value.name
 
     @property
+    def value(self) -> str:
+        return self._value.value
+
+    @property
     def field_name(self) -> str:
         return self._value.field_name
 
@@ -27,7 +31,7 @@ class SummarizerMetadata(AbstractMetadata):
         return self._value.description
 
     def __init__(self, meta: Metadata) -> None:
-        super().__init__(meta, meta.name)
+        super().__init__(meta)
 
 
 class SummarizerField(AbstractField):
@@ -98,7 +102,7 @@ class SummarizerRelationship(AbstractRelationship):
 
     @property
     def resource_name(self) -> str:
-        return self._value.field_name
+        return self._value.resource_name
 
     @property
     def related_resource_name(self) -> str:
@@ -124,6 +128,10 @@ class SummarizerResource(AbstractResource):
         return self._value.name
 
     @property
+    def app(self) -> str:
+        return self._value.app
+
+    @property
     def source_link(self) -> str:
         return self._value.source_link
 
@@ -132,12 +140,19 @@ class SummarizerResource(AbstractResource):
         return self._value.description
 
     @property
-    def virtual_fields(self) -> List[SummarizerField]:
+    def virtual_fields(self) -> List:
         return []
 
     @property
-    def normal_fields(self) -> List[SummarizerField]:
+    def normal_fields(self) -> List:
         return []
+
+    @property
+    def fields(self) -> List[SummarizerField]:
+        return [
+            SummarizerField(field)
+            for field in self._value.fields
+        ]
 
     # @property
     # def foreign_key_fields(self) -> List[SummarizerField]:

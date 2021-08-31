@@ -15,16 +15,33 @@ class Field(NamedBaseModel):
     resource_name = db.Column(
         db.String(), db.ForeignKey("resource.name"), nullable=False
     )
-    # related_resource_id = db.Column(db.Integer, db.ForeignKey("resource.id"))
 
     # relationships
-    meta_data = db.relationship("Metadata")
-    resource = db.relationship(
-        "Resource", back_populates="fields", foreign_keys=[resource_name]
+    meta_data = db.relationship(
+        "Metadata",
+        foreign_keys="Metadata.field_name",
+        backref="field",
+        cascade="all, delete-orphan",
     )
-    # related_resource = db.relationship(
-    #     "Resource", foreign_keys=[related_resource_id]
+    # relationships = db.relationship(
+    #     "Relationship",
+    #     foreign_keys="Relationship.field_name",
+    #     backref="field",
+    #     cascade="all, delete-orphan",
     # )
+    # to_relationships = db.relationship(
+    #     "Relationship",
+    #     foreign_keys="Relationship.related_field_name",
+    #     backref="related_field",
+    #     cascade="all, delete-orphan",
+    # )
+    field_filter = db.relationship(
+        "FieldFilter",
+        foreign_keys="FieldFilter.field_name",
+        backref="field",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
     def __repr__(self):
         return f'<Field: name="{self.name}" type="{self.type}">'

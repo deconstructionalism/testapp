@@ -1,3 +1,4 @@
+import re
 from app.lib.types import MongoModelType
 from app.summarize.lib import DefaultTransformer
 from app.summarize.lib.extractors import (
@@ -6,6 +7,7 @@ from app.summarize.lib.extractors import (
     AbstractResource,
 )
 from mongoengine.base import BaseField
+from mongoengine.connection import MongoEngineConnectionError
 from mongoengine.fields import LazyReferenceField, ReferenceField
 from typing import Any, List, Optional, Tuple, Type, Union, get_type_hints
 
@@ -93,6 +95,13 @@ class MongoMetadata(AbstractMetadata):
         return f"{self._field_name}.{self._name}"
 
     @property
+    def value(self):
+
+        # strip memory address if present
+        value = re.sub(r" \S+ at 0x[0-9A-Za-z]{9}", "", str(self._value))
+        return value
+
+    @property
     def field_name(self):
         return self._field_name
 
@@ -168,7 +177,7 @@ class MongoVirtualField(MongoField):
     @property
     def type(self) -> str:
         hints = get_type_hints(self._value.fget)
-        return str(hints['return']) if "return" in hints else "undefined"
+        return str(hints["return"]) if "return" in hints else "undefined"
 
     @property
     def is_virtual(self) -> bool:
@@ -191,6 +200,10 @@ class MongoResource(AbstractResource):
 
     (see metaclass for method docs)
     """
+
+    @property
+    def app(self) -> str:
+        return self._app
 
     @property
     def primary_key(self) -> str:
@@ -228,11 +241,11 @@ class MongoResource(AbstractResource):
         for name in dir(self._value):
             try:
 
-                # skip `objects` key which is a `mongoengine.queryset.QuerySet`
-                # instance that will slow down the iteration by querying
-                # the DB needlessly
-                if name == "objects":
-                    continue
+                # # skip `objects` and `objects_including_drafts` keys which are
+                # # `mongoengine.queryset.QuerySet` instances that will slow down
+                # # the iteration by queryingthe DB needlessly
+                # if name in ["objects", "objects_including_drafts"]:
+                #     continue
 
                 value = getattr(self._value, name)
 
@@ -241,11 +254,17 @@ class MongoResource(AbstractResource):
             except AttributeError:
                 print(f'unable to get virtual "{name}" from {self._value}')
 
+            except MongoEngineConnectionError:
+                # skip any properties that result in getting data from a mongo
+                # engine connection as these will invariably fail
+                continue
+
         return fields
 
     @property
     def relationships(self) -> list:
         return []
 
-    def __init__(self, resource: MongoModelType) -> None:
+    def __init__(self, resource: MongoModelType, app: str) -> None:
         super().__init__(resource, "mongo")
+        self._app = app

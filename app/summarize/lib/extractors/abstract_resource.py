@@ -60,6 +60,13 @@ class AbstractMetadata(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def value(self) -> str:
+        """Get field value."""
+
+        return ""
+
+    @property
+    @abstractmethod
     def field_name(self) -> str:
         """
         Get parent field name.
@@ -69,7 +76,6 @@ class AbstractMetadata(metaclass=ABCMeta):
 
     def __init__(self, meta: Union[str, int, float, bool]) -> None:
         self._value = meta
-        self.value = str(meta)
 
     @property
     def __dict__(self) -> dict:
@@ -180,6 +186,11 @@ class AbstractRelationship(metaclass=ABCMeta):
         return get_description(self._value)
 
     @property
+    def name(self) -> str:
+        """Get unique name of relationship."""
+        return f"{self.field_name}({self.type}){self.related_field_name}"
+
+    @property
     @abstractmethod
     def type(self) -> str:
         """Get type of relationship."""
@@ -220,6 +231,7 @@ class AbstractRelationship(metaclass=ABCMeta):
     @property
     def __dict__(self) -> dict:
         return {
+            "name": self.name,
             "type": self.type,
             "field_name": self.field_name,
             "related_field_name": self.related_field_name,
@@ -293,6 +305,13 @@ class AbstractResource(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def app(self) -> str:
+        """Get resource's django app name."""
+
+        return ""
+
+    @property
+    @abstractmethod
     def primary_key(self) -> Optional[str]:
         """Get primary key."""
 
@@ -335,6 +354,7 @@ class AbstractResource(metaclass=ABCMeta):
         return {
             "type": self.type,
             "name": self.name,
+            "app": self.app,
             "database_type": self.database_type,
             "source_link": self.source_link,
             "description": self.description,

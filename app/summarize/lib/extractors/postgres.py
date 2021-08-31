@@ -1,3 +1,4 @@
+import re
 from app.summarize.lib.extractors import (
     AbstractField,
     AbstractMetadata,
@@ -30,6 +31,13 @@ class PGMetadata(AbstractMetadata):
     @property
     def name(self):
         return f"{self._field_name}.{self._name}"
+
+    @property
+    def value(self):
+
+        # strip memory address if present
+        value = re.sub(r" \S+ at 0x[0-9A-Za-z]{9}", "", str(self._value))
+        return value
 
     @property
     def field_name(self):
@@ -126,7 +134,7 @@ class PGVirtualField(PGField):
     @property
     def type(self) -> str:
         hints = get_type_hints(self._value.fget)
-        return str(hints['return']) if "return" in hints else "undefined"
+        return str(hints["return"]) if "return" in hints else "undefined"
 
     @property
     def is_virtual(self) -> bool:
@@ -185,6 +193,10 @@ class PGResource(AbstractResource):
     """
 
     @property
+    def app(self) -> str:
+        return self._app
+
+    @property
     def primary_key(self) -> str:
         return PGField(self._value._meta.pk, self.name).name
 
@@ -227,5 +239,6 @@ class PGResource(AbstractResource):
             if isinstance(field, ForeignObjectRel)
         ]
 
-    def __init__(self, resource: ModelBase) -> None:
+    def __init__(self, resource: ModelBase, app: str) -> None:
         super().__init__(resource, "postgres")
+        self._app = app
