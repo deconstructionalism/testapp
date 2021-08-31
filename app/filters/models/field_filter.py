@@ -5,12 +5,11 @@ class FieldFilter(BaseModel):
     __tablename__ = "field_filter"
 
     # columns
-    field_name = db.Column(
-        db.String(), db.ForeignKey("field.name"), unique=True
-    )
+    filter_by = db.Column(db.String(), unique=True, nullable=False)
+    type = db.Column(db.String(), default="field")
 
     # serializer config
-    serialize_rules = ("-date_modified",)
+    serialize_rules = ("-date_modified", "-id")
 
     def __repr__(self):
-        return f"<FieldFilter field={self.field_name}>"
+        return f"<FieldFilter field={self.filter_by}>"

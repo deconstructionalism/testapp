@@ -9,21 +9,12 @@ class Relationship(NamedBaseModel):
     description = db.Column(db.Text)
 
     # references
-    field_name = db.Column(
-        db.String(),
-        nullable=False,
-    )
-    related_field_name = db.Column(
-        db.String(),
-        nullable=False,
-    )
+    field_name = db.Column(db.String(), nullable=False,)
+    related_field_name = db.Column(db.String(), nullable=False,)
     resource_name = db.Column(
         db.String(), db.ForeignKey("resource.name"), nullable=False
     )
-    related_resource_name = db.Column(
-        db.String(),
-        nullable=False,
-    )
+    related_resource_name = db.Column(db.String(), nullable=False,)
 
     def __repr__(self):
         return (

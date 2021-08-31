@@ -104,4 +104,3 @@ def extract_top_level_data(model: object) -> Dict:
         for (key, value) in model.__dict__.items()
         if not isinstance(value, (list, dict))
     }
-

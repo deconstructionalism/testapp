@@ -19,6 +19,6 @@ def index():
     return jsonify(filters)
 
 
-generate_filter_routes("field", FieldFilter, "field_name", filters)
-generate_filter_routes("metadata", MetadataFilter, "metadata_name", filters)
-generate_filter_routes("resource", ResourceFilter, "resource_name", filters)
+generate_filter_routes("field", FieldFilter, filters)
+generate_filter_routes("metadata", MetadataFilter, filters)
+generate_filter_routes("resource", ResourceFilter, filters)

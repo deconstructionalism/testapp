@@ -23,13 +23,6 @@ class Field(NamedBaseModel):
         backref="field",
         cascade="all, delete-orphan",
     )
-    field_filter = db.relationship(
-        "FieldFilter",
-        foreign_keys="FieldFilter.field_name",
-        backref="field",
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
 
     def __repr__(self):
         return f'<Field: name="{self.name}" type="{self.type}">'

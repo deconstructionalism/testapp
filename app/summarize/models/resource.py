@@ -25,13 +25,6 @@ class Resource(NamedBaseModel):
         backref="resource",
         cascade="all, delete-orphan",
     )
-    resource_filter = db.relationship(
-        "ResourceFilter",
-        foreign_keys="ResourceFilter.resource_name",
-        backref="resource",
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
 
     def __repr__(self):
         return (

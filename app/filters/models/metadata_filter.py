@@ -5,12 +5,11 @@ class MetadataFilter(BaseModel):
     __tablename__ = "metadata_filter"
 
     # columns
-    metadata_name = db.Column(
-        db.String(), db.ForeignKey("metadata.name"), unique=True
-    )
+    filter_by = db.Column(db.String(), unique=True, nullable=False)
+    type = db.Column(db.String(), default="metadata")
 
     # serializer config
-    serialize_rules = ("-date_modified",)
+    serialize_rules = ("-date_modified", "-id")
 
     def __repr__(self):
-        return f"<MetadataFilter metadata={self.metadata_name}>"
+        return f"<MetadataFilter metadata={self.filter_by}>"

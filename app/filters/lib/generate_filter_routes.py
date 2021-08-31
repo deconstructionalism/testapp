@@ -5,15 +5,13 @@ from sqlalchemy.exc import IntegrityError
 
 
 def generate_filter_routes(
-    entity: str,
-    filter_model: BaseModel,
-    primary_key: str,
-    blueprint: Blueprint,
+    entity: str, filter_model: BaseModel, blueprint: Blueprint,
 ) -> None:
     """
     Helper function to generate get and patch routes to view and toggle filters
     for a given entity type.
     """
+
     @blueprint.route(
         f"/{entity}", methods=["GET"], endpoint=f"index_{entity}"
     )
@@ -30,15 +28,17 @@ def generate_filter_routes(
 
         # check that body request data is valid
         try:
-            index = data[primary_key]
+            filter_by = data["filter_by"]
         except KeyError:
             return (
-                {"status": "fail", "data": {"expected keys": [primary_key]}},
+                {"status": "fail", "data": {"expected keys": "filter_by"}},
                 400,
             )
 
         # retreive the filter if it exists
-        filter = filter_model.query.get(index)
+        filter = filter_model.query.filter(
+            getattr(filter_model, "filter_by") == filter_by
+        ).first()
 
         # delete the filter if it already exists
         if filter:
@@ -53,7 +53,7 @@ def generate_filter_routes(
         else:
             try:
                 data = {}
-                data[primary_key] = index
+                data["filter_by"] = filter_by
                 new_filter = filter_model(**data)
                 db.session.add(new_filter)
                 db.session.commit()
