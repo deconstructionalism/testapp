@@ -7,7 +7,7 @@ class CommitSnapshot(BaseModel):
 
     # columns
     commit_id = db.Column(db.String(), unique=True, nullable=False)
-    snapshot = db.Column(JSONB)
+    diff = db.Column(JSONB, nullable=False)
 
     # serializer config
     serialize_rules = ("-date_modified", "-id")

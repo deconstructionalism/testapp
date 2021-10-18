@@ -7,7 +7,7 @@ from app.summarize.lib.extractors import (
     AbstractResource,
 )
 from mongoengine.base import BaseField
-from mongoengine.connection import MongoEngineConnectionError
+from mongoengine.connection import ConnectionFailure
 from mongoengine.fields import LazyReferenceField, ReferenceField
 from typing import Any, List, Optional, Tuple, Type, Union, get_type_hints
 
@@ -239,7 +239,7 @@ class MongoResource(AbstractResource):
             except AttributeError:
                 print(f'unable to get virtual "{name}" from {self._value}')
 
-            except MongoEngineConnectionError:
+            except ConnectionFailure:
                 # skip any properties that result in getting data from a mongo
                 # engine connection as these will invariably fail
                 continue

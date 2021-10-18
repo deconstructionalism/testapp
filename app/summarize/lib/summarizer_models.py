@@ -7,7 +7,9 @@ from app.summarize.lib.extractors import (
     SummarizerResource,
 )
 from flask import abort
+from re import search
 from typing import List, Union
+
 
 # HELPER FUNCTIONS
 
@@ -18,14 +20,15 @@ def filter_models(
 ):
     """
     For a list of named models, filter out any models who have names matching
-    the filters in a given filter class.
+    the regex filters in a given filter class.
     """
+
     filters = filter_class.query.all()
 
     return [
         model
         for model in models
-        if not any([f.filter_by in model.name for f in filters])
+        if not any([search(f.filter_by, model.name) for f in filters])
     ]
 
 

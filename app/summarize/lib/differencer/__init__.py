@@ -1,3 +1,4 @@
+from typing import Callable
 from app.summarize.lib.differencer.update_fields import update_fields
 from app.summarize.lib.differencer.update_metadata import update_metadata
 from app.summarize.lib.differencer.update_relationships import (
@@ -13,7 +14,7 @@ from app.summarize.lib.differencer.helpers import (
 )
 
 
-def update_database() -> None:
+def update_database(on_complete: Callable) -> None:
     """
     Compare current marshall repo models to summarizer database data
     and update database to reflect marshall models.
@@ -28,8 +29,13 @@ def update_database() -> None:
     # fetch latest changes to marshall
     marshall_updated = update_marshall_repo()
 
+    # take snapshot delta of commits from current version which will now
+    # be archived
+    take_commit_snapshot()
+
     # do not sync data if marshall was not updated
     if not marshall_updated:
+        on_complete()
         return
 
     # extract data from marshall and from summarizer DB
@@ -64,4 +70,4 @@ def update_database() -> None:
 
     update_relationships(relationship_delta)
 
-    take_commit_snapshot()
+    on_complete()

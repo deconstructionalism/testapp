@@ -3,6 +3,7 @@ from typing import Dict, List
 from dotenv import load_dotenv
 from os import getenv
 
+from app.lib.logger import logger
 from app.summarize.models import Field, Metadata, Resource, Relationship
 from app.summarize.lib.extractors import AbstractResource
 
@@ -11,19 +12,16 @@ load_dotenv()
 
 def update_marshall_repo() -> None:
     """
-    Get commit updates to marshall repo on designated branch if they exist.
+    Get commit updates to marshall repo on designated branch if they exist and
+    install/update packages.
     """
 
-    cmd = f"git -C marshall/ pull --force origin {getenv('MARSHALL_BRANCH')}"
+    cmd = f"sh ./scripts/refresh.sh"
     p = subprocess.Popen(cmd.split(" "), stdout=subprocess.PIPE)
 
-    out = p.communicate()
-
-    if "Already up to date" in str(out):
-        print(
-            f"marshall branch \"{getenv('MARSHALL_BRANCH')}\" already up "
-            + "to date"
-        )
+    # log each line from stdout to logger
+    for line in iter(lambda: p.stdout.readline(), b""):
+        logger.info(line.decode(encoding="utf-8").strip())
 
 
 def get_marshall_resources() -> List[AbstractResource]:
@@ -104,3 +102,9 @@ def extract_top_level_data(model: object) -> Dict:
         for (key, value) in model.__dict__.items()
         if not isinstance(value, (list, dict))
     }
+
+
+def take_commit_snapshot() -> None:
+    """Get json delta for current commit compared to previous."""
+
+    return None
