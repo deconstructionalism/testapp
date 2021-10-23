@@ -2,10 +2,19 @@ from app.database import db
 from app.filters.controllers import filters
 from app.lib.logger import logger
 from app.summarize.controllers import summarize
+from dotenv import load_dotenv
 from flask import Flask
 from flask.cli import with_appcontext
 from os import getenv
+from sqlalchemy import create_engine
+from waitress import serve
 import click
+
+# load env variables
+load_dotenv()
+env = getenv("FLASK_ENV") or "production"
+user = getenv("POSTGRES_USER")
+password = getenv("POSTGRES_PASSWORD")
 
 
 def create_app() -> Flask:
@@ -15,7 +24,6 @@ def create_app() -> Flask:
     app.url_map.strict_slashes = False
 
     # load app configuration based on `ENV` environmental var
-    env = getenv("ENV")
     env_config = (
         "config.ProductionConfig"
         if env == "production"
@@ -30,6 +38,7 @@ def create_app() -> Flask:
     app.register_blueprint(filters)
     app.register_blueprint(summarize)
 
+    # add `flask init-db` shell command
     app.cli.add_command(init_db_command)
 
     return app
@@ -54,9 +63,23 @@ def init_db_command():
         Resource,
     )
 
+    # create the database instance based on the `env`
+    engine = create_engine(
+        f"postgresql://{user}:{password}@localhost/postgres"
+    )
+    db_name = (
+        "summarizer_production"
+        if env == "production"
+        else "summarizer_development"
+    )
+
+    with engine.connect() as conn:
+        conn.execute("commit")
+        conn.execute(f"CREATE DATABASE {db_name}")
+
     # drop all database tables and create new ones based on above models
     db.drop_all()
     db.create_all()
     db.session.commit()
 
-    logger.info("Initialized the database.")
+    logger.info(f"Initialized the {env} database.")

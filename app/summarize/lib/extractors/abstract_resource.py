@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from app.lib import DatabaseTypes
-from dotenv import load_dotenv
+from app.lib.logger import logger
 from inspect import getcomments, getsourcefile, getsourcelines
 from os import getenv
 from os.path import relpath
@@ -9,8 +9,6 @@ from typing import List, Optional, Type, Union
 
 
 # LOAD ENV VARIABLES
-
-load_dotenv()
 
 marshall_repo_base_url = getenv("MARSHALL_REPO_BASE_URL")
 marshall_branch = getenv("MARSHALL_BRANCH")
@@ -257,7 +255,7 @@ class AbstractResource(metaclass=ABCMeta):
         try:
             relative_path = relpath(getsourcefile(self._value))
             if not relative_path.startswith("marshall/"):
-                print(
+                logger.info(
                     f'module "{self.name}" at "{relative_path}" '
                     + 'not found in "marshall" app.'
                 )
@@ -273,7 +271,7 @@ class AbstractResource(metaclass=ABCMeta):
                 start_line,
             )
         except (OSError):
-            print("unable to get source link for {}".format(self._value))
+            logger.info("unable to get source link for {}".format(self._value))
 
     @property
     def description(self) -> str:

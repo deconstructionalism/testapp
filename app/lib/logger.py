@@ -1,9 +1,6 @@
-from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
 from os import getenv
 import logging
-
-load_dotenv()
 
 # define log level based on env var `DEBUG`
 logging_level = logging.DEBUG if getenv("DEBUG") == "1" else logging.INFO
