@@ -1,6 +1,7 @@
 from typing import Dict
 
 from app.database import db
+from app.lib.logger import logger
 from app.summarize.models import Relationship
 from app.summarize.lib.extractors import (
     AbstractRelationship,
@@ -31,7 +32,7 @@ def update_relationships(relationship_delta: Dict):
         )
 
         if prev_flat != next_flat:
-            print(prev_flat, next_flat)
+            logger.info(prev_flat, next_flat)
 
         return prev_flat != next_flat
 
@@ -45,7 +46,7 @@ def update_relationships(relationship_delta: Dict):
         db.session.add(relationship)
         counter["created"] += 1
 
-        print(f"  Relationship[CREATE] {next_data.name}")
+        logger.info(f"  Relationship[CREATE] {next_data.name}")
 
     def delete_relationship(prev_data: Relationship) -> None:
         """Delete relationship in database."""
@@ -53,7 +54,7 @@ def update_relationships(relationship_delta: Dict):
         db.session.query(Relationship).filter_by(name=prev_data.name).delete()
         counter["deleted"] += 1
 
-        print(f"  Relationship[DELETE] {prev_data.name}")
+        logger.info(f"  Relationship[DELETE] {prev_data.name}")
 
     def update_relationship(next_data: AbstractRelationship) -> None:
         """Update relationship in database."""
@@ -65,9 +66,9 @@ def update_relationships(relationship_delta: Dict):
         )
         counter["updated"] += 1
 
-        print(f"  Relationship[UPDATE] {next_data.name}")
+        logger.info(f"  Relationship[UPDATE] {next_data.name}")
 
-    print("Staging Relationship Changes...")
+    logger.info("Staging Relationship Changes...")
 
     # iterate through each category of relationships and stage appropriate
     # changes to database
@@ -85,9 +86,9 @@ def update_relationships(relationship_delta: Dict):
     # commit all database changes
     db.session.commit()
 
-    print("...Relationships Committed\n")
+    logger.info("...Relationships Committed\n")
 
-    print(
+    logger.info(
         "SUMMARY\n"
         + f"  created: {counter['created']}\n"
         + f"  deleted: {counter['deleted']}\n"

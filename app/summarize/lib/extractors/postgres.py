@@ -1,4 +1,4 @@
-import re
+from app.lib.logger import logger
 from app.summarize.lib.extractors import (
     AbstractField,
     AbstractMetadata,
@@ -36,7 +36,7 @@ class PGMetadata(AbstractMetadata):
     def value(self):
 
         # strip memory address if present
-        value = re.sub(r" \S+ at 0x[0-9A-Za-z]{9}", "", str(self._value))
+        value = sub(r" \S+ at 0x[0-9A-Za-z]{9}", "", str(self._value))
         return value
 
     @property
@@ -195,7 +195,7 @@ class PGResource(AbstractResource):
                 if isinstance(value, property):
                     fields.append(PGVirtualField(value, name, self.name))
             except AttributeError:
-                print(f'unable to get virtual "{name}" from {self._value}')
+                logger.info(f'unable to get virtual "{name}" from {self._value}')
 
         return fields
 

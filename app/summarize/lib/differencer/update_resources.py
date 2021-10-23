@@ -1,14 +1,15 @@
-from app.summarize.lib.extractors.abstract_resource import (
-    AbstractRelationship,
-)
 from typing import Dict, List, Tuple
 
 from app.database import db
+from app.lib.logger import logger
 from app.summarize.models import Resource
 from app.summarize.lib.extractors import (
     AbstractField,
     AbstractResource,
     SummarizerResource,
+)
+from app.summarize.lib.extractors.abstract_resource import (
+    AbstractRelationship,
 )
 from app.summarize.lib.differencer.helpers import extract_top_level_data
 
@@ -66,7 +67,7 @@ def update_resources(
         db.session.add(resource)
         counter["created"] += 1
 
-        print(f"  Resource[CREATE] {next_data.name}")
+        logger.info(f"  Resource[CREATE] {next_data.name}")
 
     def archive_resource(prev_data: Resource) -> None:
         """Archive resource in database."""
@@ -76,7 +77,7 @@ def update_resources(
         )
         counter["archived"] += 1
 
-        print(f"  Resource[ARCHIVE] {prev_data.name}")
+        logger.info(f"  Resource[ARCHIVE] {prev_data.name}")
 
     def unarchive_resource(next_data: AbstractResource) -> None:
         """Unarchive resource in database."""
@@ -89,7 +90,7 @@ def update_resources(
         )
         counter["unarchived"] += 1
 
-        print(f"  Resource[UNARCHIVE] {next_data.name}")
+        logger.info(f"  Resource[UNARCHIVE] {next_data.name}")
 
     def update_resource(next_data: AbstractResource) -> None:
         """Update resource in database."""
@@ -101,9 +102,9 @@ def update_resources(
         )
         counter["updated"] += 1
 
-        print(f"  Resource[UPDATE] {next_data.name}")
+        logger.info(f"  Resource[UPDATE] {next_data.name}")
 
-    print("Staging Resource Changes...")
+    logger.info("Staging Resource Changes...")
 
     # iterate through each category of resources and stage appropriate changes
     # to database, while aggregating child fields
@@ -127,9 +128,9 @@ def update_resources(
     # commit all database changes
     db.session.commit()
 
-    print("...Resources Committed\n")
+    logger.info("...Resources Committed\n")
 
-    print(
+    logger.info(
         "SUMMARY\n"
         + f"  created: {counter['created']}\n"
         + f"  archived: {counter['archived']}\n"

@@ -1,6 +1,7 @@
 from typing import Dict
 
 from app.database import db
+from app.lib.logger import logger
 from app.summarize.models import Metadata
 from app.summarize.lib.extractors import (
     AbstractMetadata,
@@ -42,7 +43,7 @@ def update_metadata(metadata_delta: Dict) -> None:
         db.session.add(metadata)
         counter["created"] += 1
 
-        print(f"  Metadata[CREATE] {next_data.name}")
+        logger.info(f"  Metadata[CREATE] {next_data.name}")
 
     def delete_metadata(prev_data: Metadata) -> None:
         """Delete metadata from database."""
@@ -50,7 +51,7 @@ def update_metadata(metadata_delta: Dict) -> None:
         db.session.query(Metadata).filter_by(name=prev_data.name).delete()
         counter["deleted"] += 1
 
-        print(f"  Metadata[DELETE] {prev_data.name}")
+        logger.info(f"  Metadata[DELETE] {prev_data.name}")
 
     def update_metadata(next_data: AbstractMetadata) -> None:
         """Update metadata in database."""
@@ -62,9 +63,9 @@ def update_metadata(metadata_delta: Dict) -> None:
         )
         counter["updated"] += 1
 
-        print(f"  Metadata[UPDATE] {next_data.name}")
+        logger.info(f"  Metadata[UPDATE] {next_data.name}")
 
-    print("Staging Metadata Changes...")
+    logger.info("Staging Metadata Changes...")
 
     # iterate through each category of metadata and stage appropriate changes
     # to database
@@ -82,9 +83,9 @@ def update_metadata(metadata_delta: Dict) -> None:
     # commit all database changes
     db.session.commit()
 
-    print("...Metadata Committed\n")
+    logger.info("...Metadata Committed\n")
 
-    print(
+    logger.info(
         "SUMMARY\n"
         + f"  created: {counter['created']}\n"
         + f"  deleted: {counter['deleted']}\n"

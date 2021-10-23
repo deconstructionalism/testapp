@@ -1,4 +1,5 @@
 from app.database import db
+from app.lib.logger import logger
 from app.summarize.models import Field
 from app.summarize.lib.extractors import (
     AbstractField,
@@ -48,7 +49,7 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         db.session.add(field)
         counter["created"] += 1
 
-        print(f"  Field[CREATE] {next_data.name}")
+        logger.info(f"  Field[CREATE] {next_data.name}")
 
     def archive_field(prev_data: Field) -> None:
         """Archive field in database."""
@@ -58,7 +59,7 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         )
         counter["archived"] += 1
 
-        print(f"  Field[ARCHIVE] {prev_data.name}")
+        logger.info(f"  Field[ARCHIVE] {prev_data.name}")
 
     def unarchive_field(next_data: AbstractField) -> None:
         """Unarchive field in database."""
@@ -71,7 +72,7 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         )
         counter["unarchived"] += 1
 
-        print(f"  Field[UNARCHIVE] {next_data.name}")
+        logger.info(f"  Field[UNARCHIVE] {next_data.name}")
 
     def update_field(next_data: AbstractField) -> None:
         """Update field in database."""
@@ -83,9 +84,9 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
         )
         counter["updated"] += 1
 
-        print(f"  Field[UPDATE] {next_data.name}")
+        logger.info(f"  Field[UPDATE] {next_data.name}")
 
-    print("Staging Field Changes...")
+    logger.info("Staging Field Changes...")
 
     # iterate through each category of fields and stage appropriate changes
     # to database, while aggregating child metadata
@@ -109,9 +110,9 @@ def update_fields(field_delta: Dict) -> List[AbstractMetadata]:
     # commit all database changes
     db.session.commit()
 
-    print("...Fields Committed\n")
+    logger.info("...Fields Committed\n")
 
-    print(
+    logger.info(
         "SUMMARY\n"
         + f"  created: {counter['created']}\n"
         + f"  archived: {counter['archived']}\n"

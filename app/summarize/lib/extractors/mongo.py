@@ -1,4 +1,5 @@
 import re
+from app.lib.logger import logger
 from app.lib.types import MongoModelType
 from app.summarize.lib import DefaultTransformer
 from app.summarize.lib.extractors import (
@@ -237,7 +238,7 @@ class MongoResource(AbstractResource):
                 if isinstance(value, property):
                     fields.append(MongoVirtualField(value, name, self.name))
             except AttributeError:
-                print(f'unable to get virtual "{name}" from {self._value}')
+                logger.info(f'unable to get virtual "{name}" from {self._value}')
 
             except ConnectionFailure:
                 # skip any properties that result in getting data from a mongo
