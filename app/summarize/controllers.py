@@ -54,10 +54,14 @@ def show_field(app_name: str, resource_name: str, field_name: str):
 
 
 class RefreshStatus:
-    current = False
+    """
+    Encodes globally accessible value, along with closure wrapped value setter
+    represented the status of the refresh process spawned from `/refresh` POST
+    """
+    running = False
 
-    def set_status(self, next: bool):
-        self.current = next
+    def set(self, next: bool) -> None:
+        self.running = next
 
 
 refresh_status = RefreshStatus()
@@ -65,14 +69,23 @@ refresh_status = RefreshStatus()
 
 @summarize.route("/refresh", methods=["POST"])
 def refresh_models():
-    if refresh_status.current:
+    if refresh_status.running:
         return (
             {"status": "fail", "data": "refresh in progress already"},
             403,
         )
 
-    refresh_status.set_status(True)
-    thread = Thread(target=update_database, args=[lambda: refresh_status.set_status(False)])
+    # set refresh status to true and fork a new thread for refreshing the
+    # repo and updating the DB. When it completes, refresh status will be
+    # set back to `False`
+    refresh_status.set(True)
+    thread = Thread(
+        target=update_database,
+        args=[lambda: refresh_status.set(False)],
+    )
     thread.start()
 
-    return ({"status": "success", "data": "database refresh initiated..."}, 200)
+    return (
+        {"status": "success", "data": "database refresh initiated..."},
+        200,
+    )

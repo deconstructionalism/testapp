@@ -19,5 +19,5 @@ class Relationship(NamedBaseModel):
     def __repr__(self):
         return (
             f'<Relationship: type="{self.type}" '
-            + f'to="{self.related_resource.name}">'
+            + f'to="{self.related_resource_name}">'
         )
