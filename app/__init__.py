@@ -7,7 +7,6 @@ from flask import Flask
 from flask.cli import with_appcontext
 from os import getenv
 from sqlalchemy import create_engine
-from waitress import serve
 import click
 
 # load env variables

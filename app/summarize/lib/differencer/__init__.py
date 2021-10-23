@@ -27,14 +27,14 @@ def update_database(on_complete: Callable) -> None:
     app.app_context().push()
 
     # fetch latest changes to marshall
-    marshall_updated = update_marshall_repo()
+    was_updated = update_marshall_repo()
 
     # take snapshot delta of commits from current version which will now
     # be archived
     take_commit_snapshot()
 
     # do not sync data if marshall was not updated
-    if not marshall_updated:
+    if not was_updated:
         on_complete()
         return
 

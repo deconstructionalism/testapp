@@ -13,7 +13,7 @@ output=
 if [[ $1 == "init" ]]; then
   # if "init" args is passed, clone the marshall repository locally
   title_print "CLONING MARSHALL REPO"
-  marshall_clone_uri=$(grep MARSHALL_CLONE_URI .env | cut -d '=' -f2 | sed "s/\"//g")
+  marshall_clone_uri="$(grep MARSHALL_REPO_BASE_URL .env | cut -d '=' -f2 | sed "s/\"//g").git"
   git clone $marshall_clone_uri
 else
   # pull the most recent commits from the appropriate branch

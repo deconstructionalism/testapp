@@ -1,16 +1,11 @@
 import subprocess
 from typing import Dict, List
-from dotenv import load_dotenv
-from os import getenv
-
 from app.lib.logger import logger
 from app.summarize.models import Field, Metadata, Resource, Relationship
 from app.summarize.lib.extractors import AbstractResource
 
-load_dotenv()
 
-
-def update_marshall_repo() -> None:
+def update_marshall_repo() -> bool:
     """
     Get commit updates to marshall repo on designated branch if they exist and
     install/update packages.
@@ -22,6 +17,12 @@ def update_marshall_repo() -> None:
     # log each line from stdout to logger
     for line in iter(lambda: p.stdout.readline(), b""):
         logger.info(line.decode(encoding="utf-8").strip())
+
+    # get return code to figure out if repo had new commits fetched
+    p.communicate()
+    was_updated = p.returncode != 1
+
+    return was_updated
 
 
 def get_marshall_resources() -> List[AbstractResource]:
