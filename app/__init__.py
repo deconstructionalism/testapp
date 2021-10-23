@@ -53,6 +53,7 @@ def init_db_command():
 
     # all tables to be initalized must be loaded here in order for them
     # to be seen by `create_all` below
+    from app.comments.models import FieldComment, ResourceComment, Comment
     from app.filters.models import FieldFilter, MetadataFilter, ResourceFilter
     from app.summarize.models import (
         CommitSnapshot,

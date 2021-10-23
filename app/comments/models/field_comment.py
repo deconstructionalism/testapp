@@ -1,0 +1,19 @@
+from app.lib import BaseModel, db
+
+
+class FieldComment(BaseModel):
+    __tablename__ = "field_comment"
+
+    # references
+    field_name = db.Column(
+        db.String(), db.ForeignKey("field.name"), nullable=False
+    )
+    comment_id = db.Column(
+        db.Integer, db.ForeignKey("comment.id"), nullable=False
+    )
+
+    # serializer config
+    serialize_rules = ("-date_modified", "-id")
+
+    def __repr__(self):
+        return f"<FieldComment field={self.field_name}>"

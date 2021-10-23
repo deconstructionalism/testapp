@@ -13,6 +13,12 @@ class Resource(NamedBaseModel):
     is_archived = db.Column(db.Boolean, default=False, nullable=False)
 
     # relationships
+    comments = db.relationship(
+        "ResourceComment",
+        foreign_keys="ResourceComment.resource_name",
+        backref="resource",
+        cascade="all, delete-orphan",
+    )
     fields = db.relationship(
         "Field",
         foreign_keys="Field.resource_name",

@@ -32,10 +32,22 @@ def filter_models(
     ]
 
 
+class CommentsMixIn(object):
+    """Add comments to dict representation."""
+
+    @property
+    def __dict__(self) -> dict:
+
+        dict = super().__dict__
+        dict["comments"] = self._value.comments
+
+        return dict
+
+
 # EXTRACTOR CLASS OVERRIDES
 
 
-class SummarizerFieldFiltered(SummarizerField):
+class SummarizerFieldFiltered(CommentsMixIn, SummarizerField):
     """
     Override `SummarizerField` class with filtered metadata.
     """
@@ -48,7 +60,7 @@ class SummarizerFieldFiltered(SummarizerField):
         super().__init__(field)
 
 
-class SummarizerResourceFiltered(SummarizerResource):
+class SummarizerResourceFiltered(CommentsMixIn, SummarizerResource):
     """
     Override `SummarizerResource` class with filtered fields.
     """

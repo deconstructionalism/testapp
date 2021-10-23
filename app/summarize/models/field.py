@@ -17,6 +17,12 @@ class Field(NamedBaseModel):
     )
 
     # relationships
+    comments = db.relationship(
+        "FieldComment",
+        foreign_keys="FieldComment.field_name",
+        backref="field",
+        cascade="all, delete-orphan",
+    )
     meta_data = db.relationship(
         "Metadata",
         foreign_keys="Metadata.field_name",
