@@ -238,7 +238,9 @@ class MongoResource(AbstractResource):
                 if isinstance(value, property):
                     fields.append(MongoVirtualField(value, name, self.name))
             except AttributeError:
-                logger.info(f'unable to get virtual "{name}" from {self._value}')
+                logger.info(
+                    f'unable to get virtual "{name}" from {self._value}'
+                )
 
             except ConnectionFailure:
                 # skip any properties that result in getting data from a mongo

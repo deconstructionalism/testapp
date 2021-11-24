@@ -271,7 +271,9 @@ class AbstractResource(metaclass=ABCMeta):
                 start_line,
             )
         except (OSError):
-            logger.info("unable to get source link for {}".format(self._value))
+            logger.info(
+                "unable to get source link for {}".format(self._value)
+            )
 
     @property
     def description(self) -> str:

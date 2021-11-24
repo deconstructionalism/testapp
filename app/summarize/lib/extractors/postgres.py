@@ -195,7 +195,9 @@ class PGResource(AbstractResource):
                 if isinstance(value, property):
                     fields.append(PGVirtualField(value, name, self.name))
             except AttributeError:
-                logger.info(f'unable to get virtual "{name}" from {self._value}')
+                logger.info(
+                    f'unable to get virtual "{name}" from {self._value}'
+                )
 
         return fields
 
