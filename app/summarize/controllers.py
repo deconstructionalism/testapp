@@ -58,6 +58,7 @@ class RefreshStatus:
     Encodes globally accessible value, along with closure wrapped value setter
     represented the status of the refresh process spawned from `/refresh` POST
     """
+
     running = False
 
     def set(self, next: bool) -> None:
@@ -75,13 +76,39 @@ def refresh_models():
             403,
         )
 
+    # check that body request data is valid
+    data = request.get_json()
+
+    try:
+        force = data["force"]
+        assert(isinstance(force, bool))
+    except KeyError:
+        return (
+            {"status": "fail", "data": {"expected keys": "force"}},
+            400,
+        )
+    except AssertionError:
+        return (
+            {
+                "status": "fail",
+                "data": {
+                    "improper_type": {
+                        "expected_type": "bool",
+                        "key": "force",
+                        "received_type": type(force).__name__,
+                        "received": force,
+                    }
+                }
+            },
+            400,
+        )
+
     # set refresh status to true and fork a new thread for refreshing the
     # repo and updating the DB. When it completes, refresh status will be
     # set back to `False`
     refresh_status.set(True)
     thread = Thread(
-        target=update_database,
-        args=[lambda: refresh_status.set(False)],
+        target=update_database, args=(lambda: refresh_status.set(False), force)
     )
     thread.start()
 

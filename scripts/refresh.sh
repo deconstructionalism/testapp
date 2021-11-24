@@ -10,6 +10,15 @@ title_print () {
 # var to hold output in case of update
 output=
 
+# detect whether refresh of summarizer database should be forced, regardless
+# of whether marshall was updated
+force=0
+while getopts 'f' flag; do
+  case "${flag}" in
+    f) force=1 ;;
+  esac
+done
+
 if [[ $1 == "init" ]]; then
   # if "init" args is passed, clone the marshall repository locally
   title_print "CLONING MARSHALL REPO"
@@ -25,7 +34,9 @@ fi
 # if the branch is already up to date, exit the script with an error return code
 if [[ $output == *"Already up to date."* ]]; then
   echo "MARSHALL repo already up to date"
-  exit 1
+
+  # if not forcing refresh with `-f` flag, exit, otheriwse continue with script
+  if [[ "$force" -eq "0" ]]; then exit 1; else echo "forcing refresh"; fi
 fi
 
 # determine which python version is being used by marshall and

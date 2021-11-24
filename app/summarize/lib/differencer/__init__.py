@@ -1,4 +1,5 @@
 from typing import Callable
+from app.lib.logger import logger
 from app.summarize.lib.differencer.update_fields import update_fields
 from app.summarize.lib.differencer.update_metadata import update_metadata
 from app.summarize.lib.differencer.update_relationships import (
@@ -14,7 +15,7 @@ from app.summarize.lib.differencer.helpers import (
 )
 
 
-def update_database(on_complete: Callable) -> None:
+def update_database(on_complete: Callable, force: bool) -> None:
     """
     Compare current marshall repo models to summarizer database data
     and update database to reflect marshall models.
@@ -27,7 +28,7 @@ def update_database(on_complete: Callable) -> None:
     app.app_context().push()
 
     # fetch latest changes to marshall
-    was_updated = update_marshall_repo()
+    was_updated = update_marshall_repo(force)
 
     # take snapshot delta of commits from current version which will now
     # be archived
@@ -69,5 +70,7 @@ def update_database(on_complete: Callable) -> None:
     )
 
     update_relationships(relationship_delta)
+
+    logger.info('REFRESH COMPLETE')
 
     on_complete()
