@@ -16,6 +16,8 @@ flask-sqlalchemy = "^2.5"
 flask = "^2.0"
 SQLAlchemy-serializer = "^1.4"
 json-delta = "^2.0"
+waitress = "^2.0"
+jsonschema = "^4.2"
 
 [build-system]
 requires = ["poetry>=1.1.6"]

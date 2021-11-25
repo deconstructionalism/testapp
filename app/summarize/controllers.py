@@ -1,3 +1,4 @@
+from app.lib import validate_body
 from app.summarize.models.commit_snapshot import CommitSnapshot
 from flask import abort, Blueprint, jsonify, request
 from app.summarize.lib.differencer import update_database
@@ -69,6 +70,13 @@ refresh_status = RefreshStatus()
 
 
 @summarize.route("/refresh", methods=["POST"])
+@validate_body(
+    {
+        "type": "object",
+        "properties": {"force": {"type": "boolean"}},
+        "additionalProperties": False,
+    }
+)
 def refresh_models():
     if refresh_status.running:
         return (
@@ -76,39 +84,16 @@ def refresh_models():
             403,
         )
 
-    # check that body request data is valid
-    data = request.get_json()
-
-    try:
-        force = data["force"]
-        assert(isinstance(force, bool))
-    except KeyError:
-        return (
-            {"status": "fail", "data": {"expected keys": "force"}},
-            400,
-        )
-    except AssertionError:
-        return (
-            {
-                "status": "fail",
-                "data": {
-                    "improper_type": {
-                        "expected_type": "bool",
-                        "key": "force",
-                        "received_type": type(force).__name__,
-                        "received": force,
-                    }
-                }
-            },
-            400,
-        )
+    body = request.get_json()
+    force = body["force"]
 
     # set refresh status to true and fork a new thread for refreshing the
     # repo and updating the DB. When it completes, refresh status will be
     # set back to `False`
     refresh_status.set(True)
     thread = Thread(
-        target=update_database, args=(lambda: refresh_status.set(False), force)
+        target=update_database,
+        args=(lambda: refresh_status.set(False), force),
     )
     thread.start()
 

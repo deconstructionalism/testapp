@@ -5,6 +5,7 @@ from .types import (
     MongoDocumentClasses,
     MongoModelType,
 )
+from .validate_request import validate_body
 
 __all__ = [
     "BaseModel",
@@ -14,4 +15,5 @@ __all__ = [
     "MongoDocumentClasses",
     "MongoModelType",
     "NamedBaseModel",
+    "validate_body",
 ]

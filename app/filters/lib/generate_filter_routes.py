@@ -1,5 +1,6 @@
-from app.lib.base_model import BaseModel
 from app.database import db
+from app.lib import validate_body
+from app.lib.base_model import BaseModel
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
 
@@ -23,17 +24,17 @@ def generate_filter_routes(
     @blueprint.route(
         f"/{entity}", methods=["PATCH"], endpoint=f"toggle_{entity}"
     )
+    @validate_body(
+        {
+            "type": "object",
+            "properties": {"filter_by": {"type": "string"}},
+            "required": ["filter_by"],
+            "additionalProperties": False,
+        }
+    )
     def toggle_filter():
-        data = request.get_json()
-
-        # check that body request data is valid
-        try:
-            filter_by = data["filter_by"]
-        except KeyError:
-            return (
-                {"status": "fail", "data": {"expected keys": "filter_by"}},
-                400,
-            )
+        body = request.get_json()
+        filter_by = body["filter_by"]
 
         # retreive the filter if it exists
         filter = filter_model.query.filter(
