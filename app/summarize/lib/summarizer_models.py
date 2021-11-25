@@ -1,3 +1,4 @@
+from app.comments.models.field_comment import FieldComment
 from app.lib.base_model import NamedBaseModel
 from app.filters.models import FieldFilter, MetadataFilter, ResourceFilter
 from app.summarize.models import Field, Resource
@@ -136,7 +137,7 @@ class SummarizerModels:
 
             return SummarizerResourceFiltered(resource).__dict__
 
-        except AttributeError:
+        except (AttributeError, IndexError):
             abort(404, description=f'resource "{resource_name}" not found')
 
     @staticmethod
@@ -166,3 +167,37 @@ class SummarizerModels:
 
         except AttributeError:
             abort(404, description=f'field "{field_name}" not found')
+
+    @staticmethod
+    def get_field_comment(
+        app_name: str, resource_name: str, field_name: str, comment_id: int
+    ) -> FieldComment:
+        """Get a field comment."""
+
+        try:
+
+            # get the named field
+            field = SummarizerModels.get_field(
+                app_name, resource_name, field_name
+            )
+
+            # extract the comment from the named field if it exists
+            field_comment = next(
+                (
+                    field_comment
+                    for field_comment in field["comments"]
+                    if field_comment.id == comment_id
+                ),
+                None,
+            )
+
+            # return failure code if comment is not found
+            if not field_comment:
+                abort(
+                    404, description=f'field comment "{comment_id}" not found'
+                )
+
+            return field_comment
+
+        except AttributeError:
+            abort(404, description=f'field comment "{comment_id}" not found')
