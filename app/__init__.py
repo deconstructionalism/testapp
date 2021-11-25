@@ -1,7 +1,9 @@
+from app.comments.controllers import comments
 from app.database import db
 from app.filters.controllers import filters
 from app.lib.logger import logger
 from app.summarize.controllers import summarize
+from app.summarize.lib.differencer import update_database
 from dotenv import load_dotenv
 from flask import Flask
 from flask.cli import with_appcontext
@@ -34,6 +36,7 @@ def create_app() -> Flask:
     db.init_app(app)
 
     # register all blueprints
+    app.register_blueprint(comments)
     app.register_blueprint(filters)
     app.register_blueprint(summarize)
 
@@ -83,3 +86,5 @@ def init_db_command():
     db.session.commit()
 
     logger.info(f"Initialized the {env} database.")
+
+    update_database(lambda: None, True)

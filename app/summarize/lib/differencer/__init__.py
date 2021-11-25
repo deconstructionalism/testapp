@@ -1,3 +1,4 @@
+from flask import current_app
 from typing import Callable
 from app.lib.logger import logger
 from app.summarize.lib.differencer.update_fields import update_fields
@@ -15,7 +16,7 @@ from app.summarize.lib.differencer.helpers import (
 )
 
 
-def update_database(on_complete: Callable, force: bool) -> None:
+def update_database(on_complete: Callable, force: bool = False) -> None:
     """
     Compare current marshall repo models to summarizer database data
     and update database to reflect marshall models.
@@ -23,19 +24,27 @@ def update_database(on_complete: Callable, force: bool) -> None:
 
     from app import create_app
 
-    # create app context to access database
-    app = create_app()
-    app.app_context().push()
+    app = None
+
+    # check if there is already an app context to use
+    if current_app:
+        app = current_app
+    # if not, create app context to access database
+    else:
+        app = create_app()
+        app.app_context().push()
 
     # fetch latest changes to marshall
-    was_updated = update_marshall_repo(force)
+    was_updated = update_marshall_repo()
 
     # take snapshot delta of commits from current version which will now
     # be archived
     take_commit_snapshot()
 
-    # do not sync data if marshall was not updated
-    if not was_updated:
+    # do not sync data if marshall was not updated, unless `force === True`
+    if not was_updated and not force:
+        logger.info("REFRESH COMPLETE")
+
         on_complete()
         return
 
@@ -71,6 +80,6 @@ def update_database(on_complete: Callable, force: bool) -> None:
 
     update_relationships(relationship_delta)
 
-    logger.info('REFRESH COMPLETE')
+    logger.info("REFRESH COMPLETE")
 
     on_complete()

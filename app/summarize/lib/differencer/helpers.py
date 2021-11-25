@@ -5,15 +5,13 @@ from app.summarize.models import Field, Metadata, Resource, Relationship
 from app.summarize.lib.extractors import AbstractResource
 
 
-def update_marshall_repo(force: bool = False) -> bool:
+def update_marshall_repo() -> bool:
     """
     Get commit updates to marshall repo on designated branch if they exist and
     install/update packages.
     """
 
     cmd = f"sh ./scripts/refresh.sh"
-    if force:
-        cmd += " -f"
     p = subprocess.Popen(cmd.split(" "), stdout=subprocess.PIPE)
 
     # log each line from stdout to logger
