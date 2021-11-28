@@ -68,7 +68,8 @@ class SummarizerComments:
             # return failure code if comment is not found
             if not comment:
                 abort(
-                    404, description=f'resource comment "{comment_id}" not found'
+                    404,
+                    description=f'resource comment "{comment_id}" not found',
                 )
 
             return comment
