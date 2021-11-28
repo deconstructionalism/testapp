@@ -9,21 +9,23 @@ class Comment(BaseModel):
     email = db.Column(db.String(), default="field", nullable=False)
 
     # relationships
-    field_comments = db.relationship(
+    field_comment = db.relationship(
         "FieldComment",
         foreign_keys="FieldComment.comment_id",
         backref="comment",
         cascade="all, delete-orphan",
+        uselist=False,
     )
-    resource_comments = db.relationship(
+    resource_comment = db.relationship(
         "ResourceComment",
         foreign_keys="ResourceComment.comment_id",
         backref="comment",
         cascade="all, delete-orphan",
+        uselist=False,
     )
 
     # serializer config
-    serialize_rules = ("-field_comments", "-resource_comments")
+    serialize_rules = ("-field_comment", "-resource_comment")
 
     def __repr__(self):
         return f"<Comment email={self.email}>"
