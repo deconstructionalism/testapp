@@ -2,6 +2,7 @@ from app.comments import comment_blueprint
 from app.database import db
 from app.filters import filter_blueprint
 from app.lib.logger import logger
+from app.routes import root_blueprint
 from app.summarize import summarize_blueprint
 from app.summarize.lib.diff_databases import diff_databases
 from dotenv import load_dotenv
@@ -38,6 +39,7 @@ def create_app() -> Flask:
     # register all blueprints
     app.register_blueprint(comment_blueprint)
     app.register_blueprint(filter_blueprint)
+    app.register_blueprint(root_blueprint)
     app.register_blueprint(summarize_blueprint)
 
     # add `flask init-db` shell command

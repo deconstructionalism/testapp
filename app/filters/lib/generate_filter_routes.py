@@ -14,7 +14,7 @@ def generate_filter_routes(
     """
 
     @blueprint.route(
-        f"/{entity}", methods=["GET"], endpoint=f"index_{entity}"
+        f"/{entity}", methods=["GET"], endpoint=f"index_{entity}_filters"
     )
     def index_filters():
         filters = [f.to_dict() for f in filter_model.query.all()]
@@ -22,7 +22,7 @@ def generate_filter_routes(
         return jsonify(filters)
 
     @blueprint.route(
-        f"/{entity}", methods=["PATCH"], endpoint=f"toggle_{entity}"
+        f"/{entity}", methods=["PATCH"], endpoint=f"toggle_{entity}_filter"
     )
     @validate_body(
         {

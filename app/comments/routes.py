@@ -7,7 +7,7 @@ from flask import Blueprint, request
 from flask.json import jsonify
 from sqlalchemy.exc import IntegrityError
 
-comment_blueprint = Blueprint("comments", __name__)
+comment_blueprint = Blueprint("comments", __name__, url_prefix="/summarize")
 
 
 @comment_blueprint.route(
