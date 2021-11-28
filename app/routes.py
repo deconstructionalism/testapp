@@ -1,8 +1,7 @@
-
 from flask import current_app
 from flask.blueprints import Blueprint
 
-root_blueprint = Blueprint('root', __name__, url_prefix="/")
+root_blueprint = Blueprint("root", __name__, url_prefix="/")
 
 
 @root_blueprint.route("/")
@@ -12,6 +11,12 @@ def index():
     # get view html for each route
     html_list = []
     for item in current_app.url_map._rules:
+
+        # do not show the static files route
+        if item.rule.startswith("/static"):
+            continue
+
+        # assemble html for each route
         rule = item.rule.replace("<", "[").replace(">", "]")
         methods = ", ".join(
             filter(lambda x: x not in ["HEAD", "OPTIONS"], item.methods)
