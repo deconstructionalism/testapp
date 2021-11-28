@@ -11,7 +11,9 @@ from app.summarize.lib.extractors import (
 from app.summarize.lib.extractors.abstract_resource import (
     AbstractRelationship,
 )
-from app.summarize.lib.differencer.helpers import extract_top_level_data
+from app.summarize.lib.diff_databases.lib.helpers import (
+    extract_top_level_data,
+)
 
 
 def update_resources(

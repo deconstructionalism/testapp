@@ -6,7 +6,9 @@ from app.summarize.lib.extractors import (
     AbstractMetadata,
     SummarizerField,
 )
-from app.summarize.lib.differencer.helpers import extract_top_level_data
+from app.summarize.lib.diff_databases.lib.helpers import (
+    extract_top_level_data,
+)
 from typing import Dict, List, Tuple
 
 

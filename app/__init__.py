@@ -1,9 +1,9 @@
-from app.comments.controllers import comments
+from app.comments import comment_blueprint
 from app.database import db
-from app.filters.controllers import filters
+from app.filters import filter_blueprint
 from app.lib.logger import logger
-from app.summarize.controllers import summarize
-from app.summarize.lib.differencer import update_database
+from app.summarize import summarize_blueprint
+from app.summarize.lib.diff_databases import diff_databases
 from dotenv import load_dotenv
 from flask import Flask
 from flask.cli import with_appcontext
@@ -36,9 +36,9 @@ def create_app() -> Flask:
     db.init_app(app)
 
     # register all blueprints
-    app.register_blueprint(comments)
-    app.register_blueprint(filters)
-    app.register_blueprint(summarize)
+    app.register_blueprint(comment_blueprint)
+    app.register_blueprint(filter_blueprint)
+    app.register_blueprint(summarize_blueprint)
 
     # add `flask init-db` shell command
     app.cli.add_command(init_db_command)
@@ -87,4 +87,4 @@ def init_db_command():
 
     logger.info(f"Initialized the {env} database.")
 
-    update_database(lambda: None, True)
+    diff_databases(lambda: None, True)

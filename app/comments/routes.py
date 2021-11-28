@@ -1,4 +1,4 @@
-from app.comments import Comment, FieldComment
+from app.comments.models import Comment, FieldComment
 from app.database import db
 from app.lib import validate_body
 from app.summarize.lib import SummarizerModels
@@ -7,10 +7,10 @@ from flask import Blueprint, request
 from flask.json import jsonify
 from sqlalchemy.exc import IntegrityError
 
-comments = Blueprint("comments", __name__)
+comment_blueprint = Blueprint("comments", __name__)
 
 
-@comments.route(
+@comment_blueprint.route(
     "/<app_name>/<resource_name>/<field_name>/comment/<int:comment_id>",
     methods=["GET"],
 )
@@ -24,7 +24,7 @@ def show_field_comment(
     return field_comment.comment.to_dict(), 200
 
 
-@comments.route(
+@comment_blueprint.route(
     "/<app_name>/<resource_name>/<field_name>/comment", methods=["GET"],
 )
 def index_field_comments(app_name: str, resource_name: str, field_name: str):
@@ -37,7 +37,7 @@ def index_field_comments(app_name: str, resource_name: str, field_name: str):
     return jsonify(comments)
 
 
-@comments.route(
+@comment_blueprint.route(
     "/<app_name>/<resource_name>/<field_name>/comment", methods=["POST"]
 )
 @validate_body(
@@ -75,7 +75,7 @@ def create_field_comment(app_name: str, resource_name: str, field_name: str):
         return {"status": "failure", "error": e.__str__()}, 400
 
 
-@comments.route(
+@comment_blueprint.route(
     "/<app_name>/<resource_name>/<field_name>/comment/<int:comment_id>",
     methods=["PATCH"],
 )
@@ -104,7 +104,7 @@ def update_field_comment(
         return {"status": "failure", "error": e.__str__()}, 400
 
 
-@comments.route(
+@comment_blueprint.route(
     "/<app_name>/<resource_name>/<field_name>/comment/<int:comment_id>",
     methods=["DELETE"],
 )

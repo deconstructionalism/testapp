@@ -1,14 +1,16 @@
 from app.lib import validate_body
 from app.summarize.models.commit_snapshot import CommitSnapshot
 from flask import abort, Blueprint, jsonify, request
-from app.summarize.lib.differencer import update_database
+from app.summarize.lib.diff_databases import diff_databases
 from app.summarize.lib import SummarizerModels
 from threading import Thread
 
-summarize = Blueprint("summarize", __name__, url_prefix="/summarize")
+summarize_blueprint = Blueprint(
+    "summarize", __name__, url_prefix="/summarize"
+)
 
 
-@summarize.route("/", methods=["GET"])
+@summarize_blueprint.route("/", methods=["GET"])
 def index_resources():
 
     # get commit id from body params if it was passed
@@ -33,21 +35,23 @@ def index_resources():
         )
 
 
-@summarize.route("/<app_name>", methods=["GET"])
+@summarize_blueprint.route("/<app_name>", methods=["GET"])
 def index_app_resources(app_name: str):
     app_resources = SummarizerModels.get_app_resources(app_name)
 
     return jsonify(app_resources)
 
 
-@summarize.route("/<app_name>/<resource_name>", methods=["GET"])
+@summarize_blueprint.route("/<app_name>/<resource_name>", methods=["GET"])
 def show_resource(app_name: str, resource_name: str):
     resource = SummarizerModels.get_resource(app_name, resource_name)
 
     return jsonify(resource)
 
 
-@summarize.route("/<app_name>/<resource_name>/<field_name>", methods=["GET"])
+@summarize_blueprint.route(
+    "/<app_name>/<resource_name>/<field_name>", methods=["GET"]
+)
 def show_field(app_name: str, resource_name: str, field_name: str):
     field = SummarizerModels.get_field(app_name, resource_name, field_name)
 
@@ -69,7 +73,7 @@ class RefreshStatus:
 refresh_status = RefreshStatus()
 
 
-@summarize.route("/refresh", methods=["POST"])
+@summarize_blueprint.route("/refresh", methods=["POST"])
 @validate_body(
     {
         "type": "object",
@@ -92,7 +96,7 @@ def refresh_models():
     # set back to `False`
     refresh_status.set(True)
     thread = Thread(
-        target=update_database,
+        target=diff_databases,
         args=(lambda: refresh_status.set(False), force),
     )
     thread.start()

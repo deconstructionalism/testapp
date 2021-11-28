@@ -1,7 +1,3 @@
-from .models import Comment, FieldComment, ResourceComment
+from .routes import comment_blueprint
 
-__all__ = [
-    "Comment",
-    "FieldComment",
-    "ResourceComment",
-]
+__all__ = ["comment_blueprint"]

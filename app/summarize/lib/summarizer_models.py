@@ -1,4 +1,4 @@
-from app.comments.models.field_comment import FieldComment
+from app.comments.models import FieldComment
 from app.lib.base_model import NamedBaseModel
 from app.filters.models import FieldFilter, MetadataFilter, ResourceFilter
 from app.summarize.models import Field, Resource
@@ -40,7 +40,10 @@ class CommentsMixIn(object):
     def __dict__(self) -> dict:
 
         dict = super().__dict__
-        dict["comments"] = self._value.comments
+        dict["comments"] = [
+            linked_comment.comment.to_dict()
+            for linked_comment in self._value.comments
+        ]
 
         return dict
 

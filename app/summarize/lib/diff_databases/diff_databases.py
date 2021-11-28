@@ -1,22 +1,56 @@
+from app.lib.logger import logger
+from app.lib.logger import logger
+from app.summarize.lib.diff_databases.lib import (
+    calculate_model_delta,
+    take_commit_snapshot,
+    update_fields,
+    update_marshall_repo,
+    update_metadata,
+    update_relationships,
+    update_resources,
+)
+
+from app.summarize.lib.extractors import AbstractResource
+from app.summarize.models import Field, Metadata, Resource, Relationship
 from flask import current_app
 from typing import Callable
-from app.lib.logger import logger
-from app.summarize.lib.differencer.update_fields import update_fields
-from app.summarize.lib.differencer.update_metadata import update_metadata
-from app.summarize.lib.differencer.update_relationships import (
-    update_relationships,
-)
-from app.summarize.lib.differencer.update_resources import update_resources
-from app.summarize.lib.differencer.helpers import (
-    calculate_model_delta,
-    get_marshall_resources,
-    get_summarizer_data,
-    take_commit_snapshot,
-    update_marshall_repo,
-)
+from typing import Dict, List
+
+# HELPER FUNCTIONS
 
 
-def update_database(on_complete: Callable, force: bool = False) -> None:
+def get_marshall_resources() -> List[AbstractResource]:
+    """Get all resources from marshall app code."""
+
+    from app.summarize.lib import MarshallModels
+
+    models = MarshallModels()
+
+    return (
+        models.get_models("web")
+        + models.get_models("dataparty")
+        + models.get_models("mongo")
+    )
+
+
+def get_summarizer_data() -> Dict:
+    """
+    Get resource, field, relationship, and metadata data from summarizer
+    database.
+    """
+
+    return {
+        "resources": Resource.query.all(),
+        "fields": Field.query.all(),
+        "metadata": Metadata.query.all(),
+        "relationships": Relationship.query.all(),
+    }
+
+
+# MAIN FUNCTION
+
+
+def diff_databases(on_complete: Callable, force: bool = False) -> None:
     """
     Compare current marshall repo models to summarizer database data
     and update database to reflect marshall models.
