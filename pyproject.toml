@@ -15,9 +15,9 @@ psycopg2-binary = "^2.8"
 flask-sqlalchemy = "^2.5"
 flask = "^2.0"
 SQLAlchemy-serializer = "^1.4"
-json-delta = "^2.0"
 waitress = "^2.0"
 jsonschema = "^4.2"
+jsonpatch = "^1.32"
 
 [build-system]
 requires = ["poetry>=1.1.6"]

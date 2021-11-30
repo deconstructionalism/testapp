@@ -71,16 +71,16 @@ def diff_databases(on_complete: Callable, force: bool = False) -> None:
     # fetch latest changes to marshall
     was_updated = update_marshall_repo()
 
-    # take snapshot delta of commits from current version which will now
-    # be archived
-    take_commit_snapshot()
-
     # do not sync data if marshall was not updated, unless `force === True`
     if not was_updated and not force:
         logger.info("REFRESH COMPLETE")
 
         on_complete()
         return
+
+    # take snapshot delta of commits from current version which will now
+    # be archived
+    take_commit_snapshot()
 
     # extract data from marshall and from summarizer DB
     marshall_resources = get_marshall_resources()
