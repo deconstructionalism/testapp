@@ -89,7 +89,7 @@ def refresh_models():
         )
 
     body = request.get_json()
-    force = body["force"]
+    force = body["force"] if "force" in body else False
 
     # set refresh status to true and fork a new thread for refreshing the
     # repo and updating the DB. When it completes, refresh status will be
