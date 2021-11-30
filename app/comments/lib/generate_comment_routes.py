@@ -18,6 +18,7 @@ def generate_comment_routes(
     for a given entity type.
     """
 
+    # determine route settings based on `entity` value
     index_route = None
     item_route = None
     comment_model = None
